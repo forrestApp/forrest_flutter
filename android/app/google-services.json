@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "398280158994",
+    "project_id": "forrest-6fd1e",
+    "storage_bucket": "forrest-6fd1e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:398280158994:android:d150beb35399a491714dcb",
+        "android_client_info": {
+          "package_name": "com.forrest_group.forrest_flutter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "398280158994-pdjt8rc69rhalftd5i6ildelpj4evu2l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyALkGC4REjMCKVcEO_ccJzmtrggIew6T5g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "398280158994-pdjt8rc69rhalftd5i6ildelpj4evu2l.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "398280158994-7fd67033pbguokjiro3ui3b8id3i2kjn.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.forrest.iosApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
