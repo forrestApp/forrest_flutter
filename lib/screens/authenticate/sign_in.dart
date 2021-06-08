@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:forrest_flutter/screens/authenticate/forgotPassword.dart';
 import 'package:forrest_flutter/services/auth.dart';
 import 'package:forrest_flutter/shared/constants.dart';
 import 'package:forrest_flutter/shared/loading.dart';
@@ -41,7 +42,7 @@ class _SignInState extends State<SignIn> {
                 key: _formKey,
                 child: Column(
                   children: [
-                    SizedBox(height: 100),
+                    SizedBox(height: 20),
                     Text(
                       'Melde dich hier an:',
                       style: TextStyle(
@@ -120,7 +121,31 @@ class _SignInState extends State<SignIn> {
                         fontSize: 12.0,
                       ),
                     ),
-                    SizedBox(height: 60),
+                    TextButton(
+                      child: Text(
+                        'Passwort vergessen?',
+                        style: TextStyle(
+                          fontFamily: 'CourierPrime',
+                          fontSize: 15.0,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      style: ButtonStyle(
+                        foregroundColor:
+                            MaterialStateProperty.all<Color>(Colors.green),
+                        overlayColor: MaterialStateProperty.resolveWith<Color>(
+                          (Set<MaterialState> states) {
+                            if (states.contains(MaterialState.pressed))
+                              return Colors.green.withOpacity(0.12);
+                            return null; // Defer to the widget's default.
+                          },
+                        ),
+                      ),
+                      onPressed: () async => Navigator.of(context).push(
+                          MaterialPageRoute(
+                              builder: (context) => ForgotPassword())),
+                    ),
+                    SizedBox(height: 40),
                     Center(
                       child: Text(
                         'Du hast noch keinen Account? Dann registriere dich hier:',

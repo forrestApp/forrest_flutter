@@ -1,4 +1,4 @@
 class FirebaseUser {
-  final String displayName;
-  FirebaseUser({this.displayName});
+  final String uid;
+  FirebaseUser({this.uid});
 }

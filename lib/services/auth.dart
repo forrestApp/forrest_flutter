@@ -1,12 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:forrest_flutter/modules/firebaseUser.dart';
+import 'package:forrest_flutter/services/database.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   //create user object based on firebaseUser
   FirebaseUser _userFromFirebaseUser(User user) {
-    return user != null ? FirebaseUser(displayName: user.displayName) : null;
+    return user != null ? FirebaseUser(uid: user.uid) : null;
   }
 
   //auth change user stream
@@ -48,6 +49,11 @@ class AuthService {
       UserCredential result = await _auth.createUserWithEmailAndPassword(
           email: email, password: password);
       User user = result.user;
+
+      //create a new document for the user
+      await DatabaseService(uid: user.uid)
+          .updateUserData('newMember', 'new@member.com', 'newTown');
+
       return _userFromFirebaseUser(user);
     } catch (e) {
       print(e.toString());
@@ -55,8 +61,20 @@ class AuthService {
     }
   }
 
-  //sign out
+  //forgot password
 
+  Future forgotPassword(String email) async {
+    try {
+      UserCredential result = await _auth
+          .sendPasswordResetEmail(email: email)
+          .then((value) => null);
+    } catch (e) {
+      print(e.toString());
+      return null;
+    }
+  }
+
+  //sign out
   Future signOut() async {
     try {
       return await _auth.signOut();
