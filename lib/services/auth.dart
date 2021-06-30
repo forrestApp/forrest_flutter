@@ -11,7 +11,6 @@ class AuthService {
   }
 
   //auth change user stream
-
   Stream<FirebaseUser> get user {
     return _auth
         .authStateChanges()
@@ -44,20 +43,22 @@ class AuthService {
   }
 
   //register with email and password
-  Future registerWithEmailAndPassword(String email, String password) async {
+  Future registerWithEmailAndPassword(
+      String name, String email, String password, String home) async {
     try {
       UserCredential result = await _auth.createUserWithEmailAndPassword(
           email: email, password: password);
       User user = result.user;
 
       //create a new document for the user
-      await DatabaseService(uid: user.uid)
-          .updateUserData('newMember', 'new@member.com', 'newTown');
+      await DatabaseService(uid: user.uid).updateUserData(name, email, home);
 
       return _userFromFirebaseUser(user);
-    } catch (e) {
-      print(e.toString());
-      return null;
+    } on FirebaseAuthException catch (e) {
+      //exception that occurs if e-mail already exists
+      if (e.code == 'Diese Email ist bereits registriert') {
+        return e;
+      }
     }
   }
 
