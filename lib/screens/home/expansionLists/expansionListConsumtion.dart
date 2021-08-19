@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:forrest_flutter/screens/home/newElement/newConsumtion.dart';
 import 'package:forrest_flutter/shared/constants.dart';
 
 class ExpansionListConsumtion extends StatefulWidget {
@@ -25,47 +26,80 @@ class _ExpansionListConsumtionState extends State<ExpansionListConsumtion> {
       ),
       context: context,
       builder: (context) {
-        return Container(
-          padding: EdgeInsets.symmetric(horizontal: 25, vertical: 30),
-          height: 300,
-          child: Column(children: [
-            Text(
-              'Füge hier ein neuer Konsumartikel hinzu:',
-              style: TextStyle(
-                fontFamily: 'GloriaHalleluja',
-                fontSize: 22.0,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 10),
-            TextFormField(
-              decoration: textInputDecoration.copyWith(
-                  hintText: 'neuer Artikel',
-                  fillColor: Colors.green[50],
-                  enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.green[50])),
-                  focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.green[900]))),
-              validator: (val) =>
-                  val.isEmpty ? 'Du hast noch nichts eingegeben' : null,
-              onChanged: (val) {
-                setState(() => newConsumtion = val);
-              },
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              child: Text('Hinzufügen'),
-              style: ElevatedButton.styleFrom(
-                primary: Colors.green[900],
-                textStyle: TextStyle(
-                  color: Colors.white,
-                  fontFamily: 'CourierPrime',
-                  fontSize: 20.0,
+        return SingleChildScrollView(
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 25, vertical: 30),
+            height: 400,
+            child: Column(children: [
+              Text(
+                'Füge hier ein neuer Konsumartikel hinzu:',
+                style: TextStyle(
+                  fontFamily: 'GloriaHalleluja',
+                  fontSize: 22.0,
                 ),
+                textAlign: TextAlign.center,
               ),
-              onPressed: () {},
-            ),
-          ]),
+              SizedBox(height: 10),
+              TextFormField(
+                decoration: textInputDecoration.copyWith(
+                    hintText: 'neuer Artikel',
+                    fillColor: Colors.green[50],
+                    enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.green[50])),
+                    focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.green[900]))),
+                validator: (val) =>
+                    val.isEmpty ? 'Du hast noch nichts eingegeben' : null,
+                onChanged: (val) {
+                  setState(() => newConsumtion = val);
+                },
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                child: Text('Hinzufügen'),
+                style: ElevatedButton.styleFrom(
+                  primary: Colors.green[900],
+                  textStyle: TextStyle(
+                    color: Colors.white,
+                    fontFamily: 'CourierPrime',
+                    fontSize: 20.0,
+                  ),
+                ),
+                onPressed: () {},
+              ),
+              SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  TextButton(
+                    child: Container(
+                      width: 200,
+                      child: Text(
+                        'neues Lebensmittel erstellen',
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontFamily: 'CourierPrime',
+                          fontSize: 18.0,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => NewConsumtion()));
+                    },
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.arrow_right_alt_outlined),
+                    color: Colors.grey,
+                    iconSize: 40,
+                    onPressed: () {},
+                  )
+                ],
+              ),
+            ]),
+          ),
         );
       },
     );

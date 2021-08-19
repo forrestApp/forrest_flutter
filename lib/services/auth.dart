@@ -66,9 +66,10 @@ class AuthService {
 
   Future forgotPassword(String email) async {
     try {
-      UserCredential result = await _auth
+      UserCredential userCredential = await _auth
           .sendPasswordResetEmail(email: email)
           .then((value) => null);
+      return userCredential;
     } catch (e) {
       print(e.toString());
       return null;

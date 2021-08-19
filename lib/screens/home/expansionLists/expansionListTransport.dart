@@ -1,6 +1,21 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:forrest_flutter/services/dailyDatabase/addDailyTransport.dart';
 import 'package:forrest_flutter/shared/constants.dart';
+import 'package:intl/intl.dart';
 import 'package:lite_rolling_switch/lite_rolling_switch.dart';
+
+final FirebaseAuth auth = FirebaseAuth.instance;
+final User user = auth.currentUser;
+
+final firestoreInstance = FirebaseFirestore.instance;
+
+String newTransportDistance = '';
+int transportEmissionFactor = 0;
+int transportEmissions = 0;
+String transportCategory = '';
+String todaysDate = DateFormat.yMMMd().format(DateTime.now());
 
 class ExpansionListTransport extends StatefulWidget {
   @override
@@ -16,7 +31,7 @@ class _ExpansionListTransportState extends State<ExpansionListTransport> {
     ),
   ];
 
-  String newTransport;
+  String todaysDate = DateFormat.yMMMd().format(DateTime.now());
 
   void _showAddTransport() {
     showModalBottomSheet(
@@ -55,8 +70,8 @@ class _ExpansionListTransportState extends State<ExpansionListTransport> {
                   padding: EdgeInsets.symmetric(horizontal: 10),
                   child: TabBarView(
                     children: [
+                      // Fahrrad
                       Container(
-                        //Bike
                         child: Column(
                           children: [
                             SizedBox(height: 20),
@@ -90,7 +105,10 @@ class _ExpansionListTransportState extends State<ExpansionListTransport> {
                                         ? 'Du hast noch nichts eingegeben'
                                         : null,
                                     onChanged: (val) {
-                                      setState(() => newTransport = val);
+                                      setState(() {
+                                        newTransportDistance = val;
+                                        transportCategory = 'Fahrrad';
+                                      });
                                     },
                                   ),
                                 ),
@@ -126,7 +144,8 @@ class _ExpansionListTransportState extends State<ExpansionListTransport> {
                                   iconOn: Icons.check,
                                   iconOff: Icons.close,
                                   onChanged: (bool state) {
-                                    print('turned ${(state) ? 'on' : 'off'}');
+                                    transportCategory =
+                                        (state) ? 'E-Bike' : 'Fahrrad';
                                   },
                                 ),
                               ],
@@ -142,13 +161,15 @@ class _ExpansionListTransportState extends State<ExpansionListTransport> {
                                   fontSize: 20.0,
                                 ),
                               ),
-                              onPressed: () {},
+                              onPressed: () {
+                                calculateEmissions();
+                              },
                             ),
                           ],
                         ),
                       ),
+                      // Auto
                       Container(
-                        //car
                         child: Column(
                           children: [
                             SizedBox(height: 20),
@@ -182,7 +203,9 @@ class _ExpansionListTransportState extends State<ExpansionListTransport> {
                                         ? 'Du hast noch nichts eingegeben'
                                         : null,
                                     onChanged: (val) {
-                                      setState(() => newTransport = val);
+                                      newTransportDistance = val;
+                                      transportCategory =
+                                          'Auto'; // hier muss noch das vom Nutzer gespeicherte Automodell ausgelesen werden
                                     },
                                   ),
                                 ),
@@ -207,13 +230,15 @@ class _ExpansionListTransportState extends State<ExpansionListTransport> {
                                   fontSize: 20.0,
                                 ),
                               ),
-                              onPressed: () {},
+                              onPressed: () {
+                                calculateEmissions();
+                              },
                             ),
                           ],
                         ),
                       ),
+                      // Bus/Bahn
                       Container(
-                        //bus
                         child: Column(
                           children: [
                             SizedBox(height: 30),
@@ -247,7 +272,11 @@ class _ExpansionListTransportState extends State<ExpansionListTransport> {
                                         ? 'Du hast noch nichts eingegeben'
                                         : null,
                                     onChanged: (val) {
-                                      setState(() => newTransport = val);
+                                      newTransportDistance = val;
+                                      transportCategory =
+                                          int.parse(newTransportDistance) < 25
+                                              ? 'Bus (Nahverkehr)'
+                                              : 'Bus (Fernverkehr)';
                                     },
                                   ),
                                 ),
@@ -292,7 +321,11 @@ class _ExpansionListTransportState extends State<ExpansionListTransport> {
                                         ? 'Du hast noch nichts eingegeben'
                                         : null,
                                     onChanged: (val) {
-                                      setState(() => newTransport = val);
+                                      newTransportDistance = val;
+                                      transportCategory =
+                                          int.parse(newTransportDistance) < 25
+                                              ? 'Bahn (Nahverkehr)'
+                                              : 'Bahn (Fernverkehr)';
                                     },
                                   ),
                                 ),
@@ -317,13 +350,15 @@ class _ExpansionListTransportState extends State<ExpansionListTransport> {
                                   fontSize: 20.0,
                                 ),
                               ),
-                              onPressed: () {},
+                              onPressed: () {
+                                calculateEmissions();
+                              },
                             ),
                           ],
                         ),
                       ),
+                      // Flugzeug
                       Container(
-                        //plane
                         child: Column(
                           children: [
                             SizedBox(height: 20),
@@ -357,7 +392,11 @@ class _ExpansionListTransportState extends State<ExpansionListTransport> {
                                         ? 'Du hast noch nichts eingegeben'
                                         : null,
                                     onChanged: (val) {
-                                      setState(() => newTransport = val);
+                                      newTransportDistance = val;
+                                      transportCategory =
+                                          int.parse(newTransportDistance) < 25
+                                              ? 'innerdeutscher Flug'
+                                              : 'grenzüberschreitender Flug';
                                     },
                                   ),
                                 ),
@@ -382,7 +421,9 @@ class _ExpansionListTransportState extends State<ExpansionListTransport> {
                                   fontSize: 20.0,
                                 ),
                               ),
-                              onPressed: () {},
+                              onPressed: () {
+                                calculateEmissions();
+                              },
                             ),
                           ],
                         ),
@@ -396,6 +437,50 @@ class _ExpansionListTransportState extends State<ExpansionListTransport> {
         );
       },
     );
+  }
+
+  void calculateEmissions() async {
+    // getTransportEmissionFactor(); // Faktor kann nicht ausgelesen werden
+
+    await FirebaseFirestore.instance
+        .collection('Trasport')
+        .doc(transportCategory)
+        .get()
+        .then((DocumentSnapshot documentSnapshot) {
+      if (documentSnapshot.exists) {
+        transportEmissionFactor = documentSnapshot['Emissionen'] ?? [];
+      } else {
+        print('Document does not exist on the database');
+      }
+    });
+
+    // Emissionen aus Transportmittel-Emissionsfaktor und Strecke berechnen
+    transportEmissions =
+        int.parse(newTransportDistance) * transportEmissionFactor;
+
+    // In den Tagesverlauf des Nutzers eintragen
+    AddDailyTransportDatabaseService(
+      uid: user.uid,
+      date: todaysDate,
+    ).addNewDailyTransport(transportCategory, transportEmissions);
+    Navigator.pop(context);
+
+    // auf dem Home-Screen aktualisieren
+  }
+
+  void getTransportEmissionFactor() async {
+    FirebaseFirestore.instance
+        .collection('Trasport')
+        .doc('Fahrrad')
+        .get()
+        .then((DocumentSnapshot documentSnapshot) {
+      if (documentSnapshot.exists) {
+        transportEmissionFactor = documentSnapshot['Emissionen'] ?? [];
+        print('Document data: $transportEmissionFactor');
+      } else {
+        print('Document does not exist on the database');
+      }
+    });
   }
 
   Widget _buildListPanel() {
@@ -446,9 +531,9 @@ class _ExpansionListTransportState extends State<ExpansionListTransport> {
                   ),
                   trailing: Icon(Icons.delete),
                   onTap: () {
-                    setState(() {
-                      _data.removeWhere((currentItem) => item == currentItem);
-                    });
+                    //setState(() {
+                    //  _data.removeWhere((currentItem) => item == currentItem);
+                    //});
                   },
                 ),
                 ListTile(
@@ -494,47 +579,3 @@ class Item {
       this.icon,
       this.isExpanded = false});
 }
-
-/*Container(
-                  padding: EdgeInsets.symmetric(horizontal: 25, vertical: 30),
-                  height: 300,
-                  child: Column(children: [
-                    Text(
-                      'Füge hier einen neuen Transportweg ein:',
-                      style: TextStyle(
-                        fontFamily: 'GloriaHalleluja',
-                        fontSize: 22.0,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    SizedBox(height: 10),
-                    TextFormField(
-                      decoration: textInputDecoration.copyWith(
-                          hintText: 'neuer Transportweg',
-                          fillColor: Colors.green[50],
-                          enabledBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(color: Colors.green[50])),
-                          focusedBorder: OutlineInputBorder(
-                              borderSide:
-                                  BorderSide(color: Colors.green[900]))),
-                      validator: (val) =>
-                          val.isEmpty ? 'Du hast noch nichts eingegeben' : null,
-                      onChanged: (val) {
-                        setState(() => newTransport = val);
-                      },
-                    ),
-                    SizedBox(height: 20),
-                    ElevatedButton(
-                      child: Text('Hinzufügen'),
-                      style: ElevatedButton.styleFrom(
-                        primary: Colors.green[900],
-                        textStyle: TextStyle(
-                          color: Colors.white,
-                          fontFamily: 'CourierPrime',
-                          fontSize: 20.0,
-                        ),
-                      ),
-                      onPressed: () {},
-                    ),
-                  ]),
-                ),*/

@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:forrest_flutter/modules/firebaseUser.dart';
 
 class DatabaseService {
   final String uid;
@@ -17,19 +16,5 @@ class DatabaseService {
         'Wohnort': home,
       },
     );
-  }
-
-  UserData _userDataFromSnapshot(DocumentSnapshot snapshot) {
-    return UserData(
-      uid: uid,
-      name: (snapshot.data() as DocumentSnapshot)['Name'],
-      email: (snapshot.data() as DocumentSnapshot)['Email'],
-      home: (snapshot.data() as DocumentSnapshot)['Wohnort'],
-      car: (snapshot.data() as DocumentSnapshot)['Auto'],
-    );
-  }
-
-  Stream<UserData> get userData {
-    return userCollection.doc(uid).snapshots().map(_userDataFromSnapshot);
   }
 }

@@ -10,7 +10,7 @@ class ExpansionListActivities extends StatefulWidget {
 class _ExpansionListActivitiesState extends State<ExpansionListActivities> {
   List<Item> _data = [
     Item(
-      icon: Icons.celebration_outlined,
+      icon: Icons.pending_actions_outlined,
       headerValue: 'Aktivitäten',
       expandedValue: 'Du hast für eine Stunde gemalt',
     ),

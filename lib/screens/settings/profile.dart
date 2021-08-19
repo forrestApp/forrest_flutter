@@ -1,12 +1,23 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:forrest_flutter/modules/firebaseUser.dart';
-import 'package:forrest_flutter/services/auth.dart';
+import 'package:forrest_flutter/services/database.dart';
+import 'package:forrest_flutter/shared/constants.dart';
 import 'package:forrest_flutter/shared/loading.dart';
 import 'package:provider/provider.dart';
 import 'configurations.dart';
 
-final userRef = FirebaseFirestore.instance.collection('Nutzerdaten');
+final CollectionReference users =
+    FirebaseFirestore.instance.collection('Nutzerdaten');
+
+String currentName;
+String currentEmail;
+String currentHome;
+String currentProfilePicture = 'assets/images/profilePictures/manInFrame.png';
+
+final _formKey = GlobalKey<FormState>();
+
+final ScrollController controllerOne = ScrollController();
 
 class Profile extends StatefulWidget {
   @override
@@ -14,13 +25,6 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
-  final AuthService _auth = AuthService();
-  final _formkey = GlobalKey<FormState>();
-
-  String _currentName = '';
-  String _currentEmail = '';
-  String _currentPassword = '';
-  String _currentHome = '';
   String error = '';
 
   void onSelected(BuildContext context, int item) {
@@ -34,11 +38,14 @@ class _ProfileState extends State<Profile> {
     }
   }
 
+  Future<Null> refreshList() async {
+    await Future.delayed(Duration(seconds: 2));
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<FirebaseUser>(context);
-
-    String userDocId = 'WmWa48zHonSViqL80KplnCTNiys2';
 
     return Scaffold(
       appBar: AppBar(
@@ -51,93 +58,6 @@ class _ProfileState extends State<Profile> {
         ),
         centerTitle: false,
         backgroundColor: Colors.green[900],
-        actions: [
-          PopupMenuButton<int>(
-            padding: EdgeInsets.all(2),
-            onSelected: (item) => onSelected(context, item),
-            itemBuilder: (context) => [
-              PopupMenuItem<int>(
-                height: 40,
-                textStyle: TextStyle(
-                  color: Colors.black,
-                  fontFamily: 'CourierPrime',
-                  fontSize: 16.0,
-                ),
-                value: 0,
-                child: Container(
-                    child: Row(
-                  children: [
-                    SizedBox(width: 5),
-                    Icon(
-                      Icons.person,
-                      size: 28,
-                      color: Colors.green[900],
-                    ),
-                    SizedBox(width: 10),
-                    Text('Profil'),
-                  ],
-                )),
-              ),
-              PopupMenuItem<int>(
-                height: 40,
-                textStyle: TextStyle(
-                  color: Colors.black,
-                  fontFamily: 'CourierPrime',
-                  fontSize: 16.0,
-                ),
-                value: 1,
-                child: Container(
-                    child: Row(
-                  children: [
-                    SizedBox(width: 5),
-                    Icon(
-                      Icons.settings,
-                      size: 28,
-                      color: Colors.green[900],
-                    ),
-                    SizedBox(width: 10),
-                    Text('Einstellungen'),
-                  ],
-                )),
-              ),
-              PopupMenuDivider(),
-              PopupMenuItem<int>(
-                height: 30,
-                textStyle: TextStyle(
-                  color: Colors.black,
-                  fontFamily: 'CourierPrime',
-                  fontSize: 16.0,
-                ),
-                value: 2,
-                child: TextButton(
-                  child: Container(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Icon(
-                          Icons.logout,
-                          color: Colors.green[900],
-                        ),
-                        SizedBox(width: 10),
-                        Text(
-                          'Logout',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontFamily: 'CourierPrime',
-                            fontSize: 16.0,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  onPressed: () async {
-                    await _auth.signOut();
-                  },
-                ),
-              ),
-            ],
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -154,38 +74,7 @@ class _ProfileState extends State<Profile> {
                 ),
               ),
               SizedBox(height: 10),
-              SizedBox(
-                height: 200,
-                width: 200,
-                child: Stack(
-                  fit: StackFit.expand,
-                  clipBehavior: Clip.none,
-                  children: [
-                    CircleAvatar(
-                      backgroundImage:
-                          AssetImage('assets/images/profilePicture.png'),
-                    ),
-                    Positioned(
-                      right: -10,
-                      bottom: 0,
-                      child: SizedBox(
-                        height: 55,
-                        width: 55,
-                        child: RawMaterialButton(
-                            padding: EdgeInsets.zero,
-                            shape: CircleBorder(),
-                            onPressed: () {},
-                            fillColor: Colors.brown[50],
-                            child: Icon(
-                              Icons.add_a_photo_outlined,
-                              color: Colors.green[900],
-                              size: 30,
-                            )),
-                      ),
-                    )
-                  ],
-                ),
-              ),
+              ProfilePicture(),
               SizedBox(height: 20),
               GetUserName(user.uid),
               GetUserEmail(user.uid),
@@ -198,6 +87,331 @@ class _ProfileState extends State<Profile> {
   }
 }
 
+class ProfilePicture extends StatelessWidget {
+  const ProfilePicture({
+    Key key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 200,
+      width: 200,
+      child: Stack(
+        fit: StackFit.expand,
+        clipBehavior: Clip.none,
+        children: [
+          Stack(
+            children: [
+              Container(
+                height: 250,
+                width: 250,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(100),
+                  color: Colors.grey,
+                ),
+              ),
+              Positioned(
+                top: 1,
+                left: 1,
+                child: SizedBox(
+                  height: 200,
+                  width: 200,
+                  child: CircleAvatar(
+                    backgroundImage: AssetImage(currentProfilePicture),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          Positioned(
+            right: -12,
+            bottom: -2,
+            child: Stack(
+              children: [
+                Container(
+                  height: 65,
+                  width: 65,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(100),
+                    color: Colors.grey[100],
+                  ),
+                ),
+                Positioned(
+                  right: 4.5,
+                  bottom: 4.5,
+                  child: SizedBox(
+                    height: 55,
+                    width: 55,
+                    child: RawMaterialButton(
+                      padding: EdgeInsets.zero,
+                      shape: CircleBorder(),
+                      fillColor: Colors.green[900],
+                      child: Icon(
+                        Icons.add_a_photo_outlined,
+                        color: Colors.white,
+                        size: 30,
+                      ),
+                      onPressed: () {
+                        showModalBottomSheet(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
+                            context: context,
+                            builder: (context) {
+                              return Container(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 5, vertical: 10),
+                                height: 360,
+                                child: Column(children: [
+                                  Text(
+                                    'Hier kannst dein Profilbild ändern:',
+                                    style: TextStyle(
+                                      fontFamily: 'GloriaHalleluja',
+                                      fontSize: 24.0,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  Container(
+                                    height: 200,
+                                    child: ListView(
+                                      scrollDirection: Axis.horizontal,
+                                      children: <Widget>[
+                                        ButtonBar(
+                                          children: [
+                                            TextButton(
+                                              style: TextButton.styleFrom(
+                                                primary: Colors.grey,
+                                              ),
+                                              onPressed: () {
+                                                currentProfilePicture =
+                                                    'assets/images/profilePictures/manInFrame.png';
+                                                Navigator.pop(context);
+                                                Navigator.pop(context);
+                                                Navigator.of(context).push(
+                                                    MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            Profile()));
+                                              },
+                                              child: ChooseProfilePicture(
+                                                  profilePicture:
+                                                      'assets/images/profilePictures/manInFrame.png'),
+                                            ),
+                                            TextButton(
+                                              style: TextButton.styleFrom(
+                                                primary: Colors.grey,
+                                              ),
+                                              onPressed: () {
+                                                currentProfilePicture =
+                                                    'assets/images/profilePictures/womanWithCellphone.png';
+                                                Navigator.pop(context);
+                                                Navigator.pop(context);
+                                                Navigator.of(context).push(
+                                                    MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            Profile()));
+                                              },
+                                              child: ChooseProfilePicture(
+                                                  profilePicture:
+                                                      'assets/images/profilePictures/womanWithCellphone.png'),
+                                            ),
+                                            TextButton(
+                                              style: TextButton.styleFrom(
+                                                primary: Colors.grey,
+                                              ),
+                                              onPressed: () {
+                                                currentProfilePicture =
+                                                    'assets/images/profilePictures/manWithGlases.png';
+                                                Navigator.pop(context);
+                                                Navigator.pop(context);
+                                                Navigator.of(context).push(
+                                                    MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            Profile()));
+                                              },
+                                              child: ChooseProfilePicture(
+                                                  profilePicture:
+                                                      'assets/images/profilePictures/manWithGlases.png'),
+                                            ),
+                                            TextButton(
+                                              style: TextButton.styleFrom(
+                                                primary: Colors.grey,
+                                              ),
+                                              onPressed: () {
+                                                currentProfilePicture =
+                                                    'assets/images/profilePictures/womanWithPlant.png';
+                                                Navigator.pop(context);
+                                                Navigator.pop(context);
+                                                Navigator.of(context).push(
+                                                    MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            Profile()));
+                                              },
+                                              child: ChooseProfilePicture(
+                                                  profilePicture:
+                                                      'assets/images/profilePictures/womanWithPlant.png'),
+                                            ),
+                                            TextButton(
+                                              style: TextButton.styleFrom(
+                                                primary: Colors.grey,
+                                              ),
+                                              onPressed: () {
+                                                currentProfilePicture =
+                                                    'assets/images/profilePictures/manWithCellphone.png';
+                                                Navigator.pop(context);
+                                                Navigator.pop(context);
+                                                Navigator.of(context).push(
+                                                    MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            Profile()));
+                                              },
+                                              child: ChooseProfilePicture(
+                                                  profilePicture:
+                                                      'assets/images/profilePictures/manWithCellphone.png'),
+                                            ),
+                                            TextButton(
+                                              style: TextButton.styleFrom(
+                                                primary: Colors.grey,
+                                              ),
+                                              onPressed: () {
+                                                currentProfilePicture =
+                                                    'assets/images/profilePictures/womanWithLaptop.png';
+                                                Navigator.pop(context);
+                                                Navigator.pop(context);
+                                                Navigator.of(context).push(
+                                                    MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            Profile()));
+                                              },
+                                              child: ChooseProfilePicture(
+                                                  profilePicture:
+                                                      'assets/images/profilePictures/womanWithLaptop.png'),
+                                            ),
+                                            TextButton(
+                                              style: TextButton.styleFrom(
+                                                primary: Colors.grey,
+                                              ),
+                                              onPressed: () {
+                                                currentProfilePicture =
+                                                    'assets/images/profilePictures/manHappy.png';
+                                                Navigator.pop(context);
+                                                Navigator.pop(context);
+                                                Navigator.of(context).push(
+                                                    MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            Profile()));
+                                              },
+                                              child: ChooseProfilePicture(
+                                                  profilePicture:
+                                                      'assets/images/profilePictures/manHappy.png'),
+                                            ),
+                                            TextButton(
+                                              style: TextButton.styleFrom(
+                                                primary: Colors.grey,
+                                              ),
+                                              onPressed: () {
+                                                currentProfilePicture =
+                                                    'assets/images/profilePictures/womanWithCap.png';
+                                                Navigator.pop(context);
+                                              },
+                                              child: ChooseProfilePicture(
+                                                  profilePicture:
+                                                      'assets/images/profilePictures/womanWithCap.png'),
+                                            ),
+                                            TextButton(
+                                              style: TextButton.styleFrom(
+                                                primary: Colors.grey,
+                                              ),
+                                              onPressed: () {
+                                                currentProfilePicture =
+                                                    'assets/images/profilePictures/manWithMelon.png';
+                                                Navigator.pop(context);
+                                                Navigator.pop(context);
+                                                Navigator.of(context).push(
+                                                    MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            Profile()));
+                                              },
+                                              child: ChooseProfilePicture(
+                                                  profilePicture:
+                                                      'assets/images/profilePictures/manWithMelon.png'),
+                                            ),
+                                            TextButton(
+                                              style: TextButton.styleFrom(
+                                                primary: Colors.grey,
+                                              ),
+                                              onPressed: () {
+                                                currentProfilePicture =
+                                                    'assets/images/profilePictures/womanBeach.png';
+                                                Navigator.pop(context);
+                                                Navigator.pop(context);
+                                                Navigator.of(context).push(
+                                                    MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            Profile()));
+                                              },
+                                              child: ChooseProfilePicture(
+                                                  profilePicture:
+                                                      'assets/images/profilePictures/womanBeach.png'),
+                                            ),
+                                          ],
+                                        ),
+                                        SizedBox(width: 20),
+                                      ],
+                                    ),
+                                  )
+                                ]),
+                              );
+                            });
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          )
+        ],
+      ),
+    );
+  }
+}
+
+class ChooseProfilePicture extends StatelessWidget {
+  const ChooseProfilePicture({
+    Key key,
+    @required this.profilePicture,
+  }) : super(key: key);
+
+  final String profilePicture;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Container(
+          height: currentProfilePicture == profilePicture ? 165 : 110,
+          width: currentProfilePicture == profilePicture ? 165 : 110,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(100),
+            color: Colors.grey,
+          ),
+        ),
+        Positioned(
+          right: 2.1,
+          top: 1.5,
+          child: Container(
+            height: currentProfilePicture == profilePicture ? 160 : 105,
+            width: currentProfilePicture == profilePicture ? 160 : 105,
+            child: CircleAvatar(
+              backgroundImage: AssetImage(profilePicture),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class GetUserName extends StatelessWidget {
   final String documentId;
 
@@ -205,28 +419,93 @@ class GetUserName extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    CollectionReference users =
-        FirebaseFirestore.instance.collection('Nutzerdaten');
-
+    final user = Provider.of<FirebaseUser>(context);
     return FutureBuilder<DocumentSnapshot>(
       future: users.doc(documentId).get(),
       builder:
           (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
-        if (snapshot.hasError) {
-          return Text("Something went wrong");
-        }
-
-        if (snapshot.hasData && !snapshot.data.exists) {
-          return Text("Document does not exist");
-        }
-
         if (snapshot.connectionState == ConnectionState.done) {
           Map<String, dynamic> data =
               snapshot.data.data() as Map<String, dynamic>;
+          currentName = data['Name'];
           return ProfileForm(
-              category: 'Name:',
-              userData: data['Name'],
-              press: () {}); //Text("Full Name: ${data['Name']}");
+            category: 'Name:',
+            userData: data['Name'],
+            press: () {
+              showModalBottomSheet(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+                context: context,
+                builder: (context) {
+                  return Container(
+                    padding: EdgeInsets.symmetric(horizontal: 25, vertical: 30),
+                    height: 250,
+                    child: Column(children: [
+                      Text(
+                        'Hier kannst deinen Namen ändern:',
+                        style: TextStyle(
+                          fontFamily: 'GloriaHalleluja',
+                          fontSize: 24.0,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(height: 10),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            width: 240,
+                            child: TextFormField(
+                              key: _formKey,
+                              decoration: textInputDecoration.copyWith(
+                                  hintText: currentName,
+                                  fillColor: Colors.green[50],
+                                  enabledBorder: UnderlineInputBorder(
+                                      borderSide:
+                                          BorderSide(color: Colors.green[50])),
+                                  focusedBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                          color: Colors.green[900]))),
+                              validator: (val) => val.isEmpty
+                                  ? 'Du hast noch nichts eingegeben'
+                                  : null,
+                              onChanged: (val) {
+                                currentName = val;
+                              },
+                            ),
+                          ),
+                          ElevatedButton(
+                            child: Icon(Icons.check),
+                            style: ElevatedButton.styleFrom(
+                              primary: Colors.green[900],
+                              textStyle: TextStyle(
+                                color: Colors.white,
+                                fontFamily: 'CourierPrime',
+                                fontSize: 20.0,
+                              ),
+                            ),
+                            onPressed: () async {
+                              await DatabaseService(uid: user.uid)
+                                  .updateUserData(
+                                currentName ?? data['Name'],
+                                currentEmail ?? data['Email'],
+                                currentHome ?? data['Home'],
+                              );
+                              Navigator.of(context).pop();
+                              Navigator.of(context).pop();
+                              Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (context) => Profile()));
+                            },
+                          ),
+                        ],
+                      ),
+                    ]),
+                  );
+                },
+              );
+            },
+          );
         }
         return Loading();
       },
@@ -241,6 +520,7 @@ class GetUserEmail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final user = Provider.of<FirebaseUser>(context);
     CollectionReference users =
         FirebaseFirestore.instance.collection('Nutzerdaten');
 
@@ -248,21 +528,88 @@ class GetUserEmail extends StatelessWidget {
       future: users.doc(documentId).get(),
       builder:
           (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
-        if (snapshot.hasError) {
-          return Text("Something went wrong");
-        }
-
-        if (snapshot.hasData && !snapshot.data.exists) {
-          return Text("Document does not exist");
-        }
-
         if (snapshot.connectionState == ConnectionState.done) {
           Map<String, dynamic> data =
               snapshot.data.data() as Map<String, dynamic>;
+          currentEmail = data['Email'];
           return ProfileForm(
               category: 'Email:',
               userData: data['Email'],
-              press: () {}); //Text("Full Name: ${data['Name']}");
+              press: () {
+                showModalBottomSheet(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                  context: context,
+                  builder: (context) {
+                    return Container(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 25, vertical: 30),
+                      height: 250,
+                      child: Column(children: [
+                        Text(
+                          'Hier kannst deine Email ändern:',
+                          style: TextStyle(
+                            fontFamily: 'GloriaHalleluja',
+                            fontSize: 24.0,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              width: 240,
+                              child: TextFormField(
+                                key: _formKey,
+                                decoration: textInputDecoration.copyWith(
+                                    hintText: currentEmail,
+                                    fillColor: Colors.green[50],
+                                    enabledBorder: UnderlineInputBorder(
+                                        borderSide: BorderSide(
+                                            color: Colors.green[50])),
+                                    focusedBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(
+                                            color: Colors.green[900]))),
+                                validator: (val) => val.isEmpty
+                                    ? 'Du hast noch nichts eingegeben'
+                                    : null,
+                                onChanged: (val) {
+                                  currentEmail = val;
+                                },
+                              ),
+                            ),
+                            ElevatedButton(
+                              child: Icon(Icons.check),
+                              style: ElevatedButton.styleFrom(
+                                primary: Colors.green[900],
+                                textStyle: TextStyle(
+                                  color: Colors.white,
+                                  fontFamily: 'CourierPrime',
+                                  fontSize: 20.0,
+                                ),
+                              ),
+                              onPressed: () async {
+                                await DatabaseService(uid: user.uid)
+                                    .updateUserData(
+                                  currentName ?? data['Name'],
+                                  currentEmail ?? data['Email'],
+                                  currentHome ?? data['Home'],
+                                );
+                                Navigator.of(context).pop();
+                                Navigator.of(context).pop();
+                                Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (context) => Profile()));
+                              },
+                            ),
+                          ],
+                        ),
+                      ]),
+                    );
+                  },
+                );
+              });
         }
         return Loading();
       },
@@ -277,6 +624,7 @@ class GetUserHome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final user = Provider.of<FirebaseUser>(context);
     CollectionReference users =
         FirebaseFirestore.instance.collection('Nutzerdaten');
 
@@ -284,21 +632,88 @@ class GetUserHome extends StatelessWidget {
       future: users.doc(documentId).get(),
       builder:
           (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
-        if (snapshot.hasError) {
-          return Text("Something went wrong");
-        }
-
-        if (snapshot.hasData && !snapshot.data.exists) {
-          return Text("Document does not exist");
-        }
-
         if (snapshot.connectionState == ConnectionState.done) {
           Map<String, dynamic> data =
               snapshot.data.data() as Map<String, dynamic>;
+          currentHome = data['Wohnort'];
           return ProfileForm(
               category: 'Wohnort:',
               userData: data['Wohnort'],
-              press: () {}); //Text("Full Name: ${data['Name']}");
+              press: () {
+                showModalBottomSheet(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                  context: context,
+                  builder: (context) {
+                    return Container(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 25, vertical: 30),
+                      height: 250,
+                      child: Column(children: [
+                        Text(
+                          'Hier kannst deinen Wohnort ändern:',
+                          style: TextStyle(
+                            fontFamily: 'GloriaHalleluja',
+                            fontSize: 24.0,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              width: 240,
+                              child: TextFormField(
+                                key: _formKey,
+                                decoration: textInputDecoration.copyWith(
+                                    hintText: currentHome,
+                                    fillColor: Colors.green[50],
+                                    enabledBorder: UnderlineInputBorder(
+                                        borderSide: BorderSide(
+                                            color: Colors.green[50])),
+                                    focusedBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(
+                                            color: Colors.green[900]))),
+                                validator: (val) => val.isEmpty
+                                    ? 'Du hast noch nichts eingegeben'
+                                    : null,
+                                onChanged: (val) {
+                                  currentHome = val;
+                                },
+                              ),
+                            ),
+                            ElevatedButton(
+                              child: Icon(Icons.check),
+                              style: ElevatedButton.styleFrom(
+                                primary: Colors.green[900],
+                                textStyle: TextStyle(
+                                  color: Colors.white,
+                                  fontFamily: 'CourierPrime',
+                                  fontSize: 20.0,
+                                ),
+                              ),
+                              onPressed: () async {
+                                await DatabaseService(uid: user.uid)
+                                    .updateUserData(
+                                  currentName ?? data['Name'],
+                                  currentEmail ?? data['Email'],
+                                  currentHome ?? data['Home'],
+                                );
+                                Navigator.of(context).pop();
+                                Navigator.of(context).pop();
+                                Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (context) => Profile()));
+                              },
+                            ),
+                          ],
+                        ),
+                      ]),
+                    );
+                  },
+                );
+              });
         }
         return Loading();
       },
@@ -313,6 +728,7 @@ class GetUserCar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    //final user = Provider.of<FirebaseUser>(context);
     CollectionReference users =
         FirebaseFirestore.instance.collection('Nutzerdaten');
 
@@ -320,21 +736,11 @@ class GetUserCar extends StatelessWidget {
       future: users.doc(documentId).get(),
       builder:
           (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
-        if (snapshot.hasError) {
-          return Text("Something went wrong");
-        }
-
-        if (snapshot.hasData && !snapshot.data.exists) {
-          return Text("Document does not exist");
-        }
-
         if (snapshot.connectionState == ConnectionState.done) {
           Map<String, dynamic> data =
               snapshot.data.data() as Map<String, dynamic>;
           return ProfileForm(
-              category: 'Auto:',
-              userData: data['Auto'],
-              press: () {}); //Text("Full Name: ${data['Name']}");
+              category: 'Auto:', userData: data['Auto'], press: () {});
         }
         return Loading();
       },

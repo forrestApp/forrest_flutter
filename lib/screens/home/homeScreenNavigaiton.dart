@@ -1,3 +1,4 @@
+import 'package:dropdownfield/dropdownfield.dart';
 import 'package:flutter/material.dart';
 import 'package:forrest_flutter/screens/home/calender.dart';
 import 'package:forrest_flutter/screens/home/compensation.dart';
@@ -5,7 +6,12 @@ import 'package:forrest_flutter/screens/home/home.dart';
 import 'package:forrest_flutter/screens/home/map_local_alternative.dart';
 import 'package:forrest_flutter/screens/settings/configurations.dart';
 import 'package:forrest_flutter/screens/settings/profile.dart';
+import 'package:forrest_flutter/services/addFoodDatabase.dart';
 import 'package:forrest_flutter/services/auth.dart';
+import 'package:forrest_flutter/shared/constants.dart';
+import 'package:lite_rolling_switch/lite_rolling_switch.dart';
+
+import 'newElement/newFood.dart';
 
 class HomeScreenNavigation extends StatefulWidget {
   @override
@@ -14,6 +20,13 @@ class HomeScreenNavigation extends StatefulWidget {
 
 class _HomeScreenNavigationState extends State<HomeScreenNavigation> {
   final AuthService _auth = AuthService();
+
+  String newFood;
+  String newActivity;
+  String newTransport;
+  String newConsumtion;
+
+  final selectedFood = TextEditingController();
 
   bool homeIcon = true;
   int used = 0;
@@ -35,6 +48,588 @@ class _HomeScreenNavigationState extends State<HomeScreenNavigation> {
             .push(MaterialPageRoute(builder: (context) => Configuration()));
         break;
     }
+  }
+
+  void _showAddFood() {
+    showModalBottomSheet(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10.0),
+      ),
+      context: context,
+      builder: (context) {
+        return SingleChildScrollView(
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 25, vertical: 30),
+            height: 500,
+            child: Column(
+              children: [
+                Text(
+                  'Füge hier ein neues Lebensmittel ein:',
+                  style: TextStyle(
+                    fontFamily: 'GloriaHalleluja',
+                    fontSize: 22.0,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 10),
+                DropDownField(
+                  controller: selectedFood,
+                  hintText: 'neues Lebensmittel',
+                  itemsVisibleInDropdown: 3,
+                  enabled: true,
+                  items: <String>[
+                    "Apfel",
+                    "Milch",
+                    "Yogurt",
+                    "Brot",
+                  ],
+                  onValueChanged: (value) {
+                    setState(() {
+                      nameOfNewFood = value;
+                    });
+                  },
+                ),
+                SizedBox(height: 20),
+                ElevatedButton(
+                  child: Text('Hinzufügen'),
+                  style: ElevatedButton.styleFrom(
+                    primary: Colors.green[900],
+                    textStyle: TextStyle(
+                      color: Colors.white,
+                      fontFamily: 'CourierPrime',
+                      fontSize: 20.0,
+                    ),
+                  ),
+                  onPressed: () {
+                    AddFoodDatabaseService(foodCategory: categoryOfNewFood)
+                        .addNewFood(nameOfNewFood, emissionsOfNewFood, siegel,
+                            originOfNewFood, sliderValue, selectedPackaging);
+                    Navigator.pop(context);
+                  },
+                ),
+                SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextButton(
+                      child: Container(
+                        width: 200,
+                        child: Text(
+                          'neues Lebensmittel erstellen',
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontFamily: 'CourierPrime',
+                            fontSize: 18.0,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).push(
+                            MaterialPageRoute(builder: (context) => NewFood()));
+                      },
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.arrow_right_alt_outlined),
+                      color: Colors.grey,
+                      iconSize: 40,
+                      onPressed: () {},
+                    )
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showAddConsumtion() {
+    showModalBottomSheet(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10.0),
+      ),
+      context: context,
+      builder: (context) {
+        return Container(
+          padding: EdgeInsets.symmetric(horizontal: 25, vertical: 30),
+          height: 300,
+          child: Column(children: [
+            Text(
+              'Füge hier ein neuer Konsumartikel hinzu:',
+              style: TextStyle(
+                fontFamily: 'GloriaHalleluja',
+                fontSize: 22.0,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 10),
+            TextFormField(
+              decoration: textInputDecoration.copyWith(
+                  hintText: 'neuer Artikel',
+                  fillColor: Colors.green[50],
+                  enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.green[50])),
+                  focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.green[900]))),
+              validator: (val) =>
+                  val.isEmpty ? 'Du hast noch nichts eingegeben' : null,
+              onChanged: (val) {
+                setState(() => newConsumtion = val);
+              },
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              child: Text('Hinzufügen'),
+              style: ElevatedButton.styleFrom(
+                primary: Colors.green[900],
+                textStyle: TextStyle(
+                  color: Colors.white,
+                  fontFamily: 'CourierPrime',
+                  fontSize: 20.0,
+                ),
+              ),
+              onPressed: () {},
+            ),
+          ]),
+        );
+      },
+    );
+  }
+
+  void _showAddTransport() {
+    showModalBottomSheet(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10.0),
+      ),
+      context: context,
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          child: Scaffold(
+            body: DefaultTabController(
+              length: 4,
+              child: Scaffold(
+                appBar: AppBar(
+                  automaticallyImplyLeading: false,
+                  title: Text(
+                    'neuer Transportweg:',
+                    style: TextStyle(
+                      fontFamily: 'GloriaHalleluja',
+                      fontSize: 25,
+                    ),
+                  ),
+                  backgroundColor: Colors.green[900],
+                  bottom: TabBar(
+                    indicatorColor: Colors.green[900],
+                    tabs: [
+                      Tab(icon: Icon(Icons.directions_bike_outlined)),
+                      Tab(icon: Icon(Icons.directions_car_outlined)),
+                      Tab(icon: Icon(Icons.directions_bus_filled_outlined)),
+                      Tab(icon: Icon(Icons.flight_outlined)),
+                    ],
+                  ),
+                ),
+                body: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 10),
+                  child: TabBarView(
+                    children: [
+                      Container(
+                        //Bike
+                        child: Column(
+                          children: [
+                            SizedBox(height: 20),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Container(
+                                  width: 100,
+                                  child: Text(
+                                    'Strecke:',
+                                    style: TextStyle(
+                                      fontFamily: 'CourierPrime',
+                                      fontSize: 20,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 30),
+                                Container(
+                                  width: 150,
+                                  child: TextFormField(
+                                    decoration: textInputDecoration.copyWith(
+                                        hintText: 'Fahrradstrecke',
+                                        fillColor: Colors.green[50],
+                                        enabledBorder: UnderlineInputBorder(
+                                            borderSide: BorderSide(
+                                                color: Colors.green[50])),
+                                        focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                color: Colors.green[900]))),
+                                    validator: (val) => val.isEmpty
+                                        ? 'Du hast noch nichts eingegeben'
+                                        : null,
+                                    onChanged: (val) {
+                                      setState(() => newTransport = val);
+                                    },
+                                  ),
+                                ),
+                                SizedBox(width: 10),
+                                Text(
+                                  'km',
+                                  style: TextStyle(
+                                    fontFamily: 'CourierPrime',
+                                    fontSize: 20,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 20),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'E-Bike?',
+                                  style: TextStyle(
+                                    fontFamily: 'CourierPrime',
+                                    fontSize: 20,
+                                  ),
+                                ),
+                                SizedBox(width: 80),
+                                LiteRollingSwitch(
+                                  value: false,
+                                  textOn: '',
+                                  textOff: '',
+                                  colorOn:
+                                      Colors.lightGreen[400].withOpacity(0.8),
+                                  colorOff: Colors.orange[200],
+                                  iconOn: Icons.check,
+                                  iconOff: Icons.close,
+                                  onChanged: (bool state) {
+                                    print('turned ${(state) ? 'on' : 'off'}');
+                                  },
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 20),
+                            ElevatedButton(
+                              child: Text('Hinzufügen'),
+                              style: ElevatedButton.styleFrom(
+                                primary: Colors.green[900],
+                                textStyle: TextStyle(
+                                  color: Colors.white,
+                                  fontFamily: 'CourierPrime',
+                                  fontSize: 20.0,
+                                ),
+                              ),
+                              onPressed: () {},
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        //car
+                        child: Column(
+                          children: [
+                            SizedBox(height: 20),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Container(
+                                  width: 100,
+                                  child: Text(
+                                    'Strecke:',
+                                    style: TextStyle(
+                                      fontFamily: 'CourierPrime',
+                                      fontSize: 20,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 30),
+                                Container(
+                                  width: 150,
+                                  child: TextFormField(
+                                    decoration: textInputDecoration.copyWith(
+                                        hintText: 'Autostrecke',
+                                        fillColor: Colors.green[50],
+                                        enabledBorder: UnderlineInputBorder(
+                                            borderSide: BorderSide(
+                                                color: Colors.green[50])),
+                                        focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                color: Colors.green[900]))),
+                                    validator: (val) => val.isEmpty
+                                        ? 'Du hast noch nichts eingegeben'
+                                        : null,
+                                    onChanged: (val) {
+                                      setState(() => newTransport = val);
+                                    },
+                                  ),
+                                ),
+                                SizedBox(width: 10),
+                                Text(
+                                  'km',
+                                  style: TextStyle(
+                                    fontFamily: 'CourierPrime',
+                                    fontSize: 20,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 20),
+                            ElevatedButton(
+                              child: Text('Hinzufügen'),
+                              style: ElevatedButton.styleFrom(
+                                primary: Colors.green[900],
+                                textStyle: TextStyle(
+                                  color: Colors.white,
+                                  fontFamily: 'CourierPrime',
+                                  fontSize: 20.0,
+                                ),
+                              ),
+                              onPressed: () {},
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        //bus
+                        child: Column(
+                          children: [
+                            SizedBox(height: 30),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Container(
+                                  width: 100,
+                                  child: Text(
+                                    'Bus:',
+                                    style: TextStyle(
+                                      fontFamily: 'CourierPrime',
+                                      fontSize: 20,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 30),
+                                Container(
+                                  width: 150,
+                                  child: TextFormField(
+                                    decoration: textInputDecoration.copyWith(
+                                        hintText: 'Busstrecke',
+                                        fillColor: Colors.green[50],
+                                        enabledBorder: UnderlineInputBorder(
+                                            borderSide: BorderSide(
+                                                color: Colors.green[50])),
+                                        focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                color: Colors.green[900]))),
+                                    validator: (val) => val.isEmpty
+                                        ? 'Du hast noch nichts eingegeben'
+                                        : null,
+                                    onChanged: (val) {
+                                      setState(() => newTransport = val);
+                                    },
+                                  ),
+                                ),
+                                SizedBox(width: 10),
+                                Text(
+                                  'km',
+                                  style: TextStyle(
+                                    fontFamily: 'CourierPrime',
+                                    fontSize: 20,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 30),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Container(
+                                  width: 100,
+                                  child: Text(
+                                    'Bahn:',
+                                    style: TextStyle(
+                                      fontFamily: 'CourierPrime',
+                                      fontSize: 20,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 30),
+                                Container(
+                                  width: 150,
+                                  child: TextFormField(
+                                    decoration: textInputDecoration.copyWith(
+                                        hintText: 'Bahnstrecke',
+                                        fillColor: Colors.green[50],
+                                        enabledBorder: UnderlineInputBorder(
+                                            borderSide: BorderSide(
+                                                color: Colors.green[50])),
+                                        focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                color: Colors.green[900]))),
+                                    validator: (val) => val.isEmpty
+                                        ? 'Du hast noch nichts eingegeben'
+                                        : null,
+                                    onChanged: (val) {
+                                      setState(() => newTransport = val);
+                                    },
+                                  ),
+                                ),
+                                SizedBox(width: 10),
+                                Text(
+                                  'km',
+                                  style: TextStyle(
+                                    fontFamily: 'CourierPrime',
+                                    fontSize: 20,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 30),
+                            ElevatedButton(
+                              child: Text('Hinzufügen'),
+                              style: ElevatedButton.styleFrom(
+                                primary: Colors.green[900],
+                                textStyle: TextStyle(
+                                  color: Colors.white,
+                                  fontFamily: 'CourierPrime',
+                                  fontSize: 20.0,
+                                ),
+                              ),
+                              onPressed: () {},
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        //plane
+                        child: Column(
+                          children: [
+                            SizedBox(height: 20),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Container(
+                                  width: 100,
+                                  child: Text(
+                                    'Strecke:',
+                                    style: TextStyle(
+                                      fontFamily: 'CourierPrime',
+                                      fontSize: 20,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 30),
+                                Container(
+                                  width: 150,
+                                  child: TextFormField(
+                                    decoration: textInputDecoration.copyWith(
+                                        hintText: 'Flugstrecke',
+                                        fillColor: Colors.green[50],
+                                        enabledBorder: UnderlineInputBorder(
+                                            borderSide: BorderSide(
+                                                color: Colors.green[50])),
+                                        focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                color: Colors.green[900]))),
+                                    validator: (val) => val.isEmpty
+                                        ? 'Du hast noch nichts eingegeben'
+                                        : null,
+                                    onChanged: (val) {
+                                      setState(() => newTransport = val);
+                                    },
+                                  ),
+                                ),
+                                SizedBox(width: 10),
+                                Text(
+                                  'km',
+                                  style: TextStyle(
+                                    fontFamily: 'CourierPrime',
+                                    fontSize: 20,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 20),
+                            ElevatedButton(
+                              child: Text('Hinzufügen'),
+                              style: ElevatedButton.styleFrom(
+                                primary: Colors.green[900],
+                                textStyle: TextStyle(
+                                  color: Colors.white,
+                                  fontFamily: 'CourierPrime',
+                                  fontSize: 20.0,
+                                ),
+                              ),
+                              onPressed: () {},
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showAddActivties() {
+    showModalBottomSheet(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10.0),
+      ),
+      context: context,
+      builder: (context) {
+        return Container(
+          padding: EdgeInsets.symmetric(horizontal: 25, vertical: 30),
+          height: 300,
+          child: Column(children: [
+            Text(
+              'Füge hier eine Aktivität hinzu:',
+              style: TextStyle(
+                fontFamily: 'GloriaHalleluja',
+                fontSize: 22.0,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 10),
+            TextFormField(
+              decoration: textInputDecoration.copyWith(
+                  hintText: 'neue Aktivität',
+                  fillColor: Colors.green[50],
+                  enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.green[50])),
+                  focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.green[900]))),
+              validator: (val) =>
+                  val.isEmpty ? 'Du hast noch nichts eingegeben' : null,
+              onChanged: (val) {
+                setState(() => newActivity = val);
+              },
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              child: Text('Hinzufügen'),
+              style: ElevatedButton.styleFrom(
+                primary: Colors.green[900],
+                textStyle: TextStyle(
+                  color: Colors.white,
+                  fontFamily: 'CourierPrime',
+                  fontSize: 20.0,
+                ),
+              ),
+              onPressed: () {},
+            ),
+          ]),
+        );
+      },
+    );
   }
 
   @override
@@ -148,9 +743,110 @@ class _HomeScreenNavigationState extends State<HomeScreenNavigation> {
               ),
               onPressed: () async {
                 if (_selectedPage == 3) {
-                  setState(() {
-                    used = 1;
-                  });
+                  showModalBottomSheet(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    context: context,
+                    builder: (context) {
+                      return Padding(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        child: Container(
+                          height: 150,
+                          child: Column(
+                            children: [
+                              Text(
+                                'Wähle eine Kategorie:',
+                                style: TextStyle(
+                                  fontFamily: 'GloriaHalleluja',
+                                  fontSize: 25,
+                                ),
+                              ),
+                              SizedBox(height: 10),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  Container(
+                                    height: 60,
+                                    width: 60,
+                                    decoration: BoxDecoration(
+                                      color: Colors.lightGreen[100],
+                                      borderRadius: BorderRadius.circular(100),
+                                    ),
+                                    child: IconButton(
+                                      icon: Icon(Icons.lunch_dining_outlined),
+                                      iconSize: 35,
+                                      color: Colors.grey[800],
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                        _showAddFood();
+                                      },
+                                    ),
+                                  ),
+                                  Container(
+                                    height: 60,
+                                    width: 60,
+                                    decoration: BoxDecoration(
+                                      color: Colors.lightGreen[100],
+                                      borderRadius: BorderRadius.circular(100),
+                                    ),
+                                    child: IconButton(
+                                      icon: Icon(
+                                          Icons.local_grocery_store_outlined),
+                                      iconSize: 35,
+                                      color: Colors.grey[800],
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                        _showAddConsumtion();
+                                      },
+                                    ),
+                                  ),
+                                  Container(
+                                    height: 60,
+                                    width: 60,
+                                    decoration: BoxDecoration(
+                                      color: Colors.lightGreen[100],
+                                      borderRadius: BorderRadius.circular(100),
+                                    ),
+                                    child: IconButton(
+                                      icon:
+                                          Icon(Icons.directions_bike_outlined),
+                                      iconSize: 35,
+                                      color: Colors.grey[800],
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                        _showAddTransport();
+                                      },
+                                    ),
+                                  ),
+                                  Container(
+                                    height: 60,
+                                    width: 60,
+                                    decoration: BoxDecoration(
+                                      color: Colors.lightGreen[100],
+                                      borderRadius: BorderRadius.circular(100),
+                                    ),
+                                    child: IconButton(
+                                      icon: Icon(Icons
+                                          .pending_actions_outlined), //pending_actions_outlined  tips_and_updates_outlined    donut_large_outlined
+                                      iconSize: 35,
+                                      color: Colors.grey[800],
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                        _showAddActivties();
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  );
                 } else {
                   setState(() {
                     _selectedPage = 3;

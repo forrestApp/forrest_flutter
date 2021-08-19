@@ -3,7 +3,6 @@ import 'package:forrest_flutter/screens/home/expansionLists/expansionListActivit
 import 'package:forrest_flutter/screens/home/expansionLists/expansionListConsumtion.dart';
 import 'package:forrest_flutter/screens/home/expansionLists/expansionListFood.dart';
 import 'package:forrest_flutter/screens/home/expansionLists/expansionListTransport.dart';
-import 'package:syncfusion_flutter_calendar/calendar.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -24,7 +23,8 @@ class _HomeState extends State<Home> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Card(
+              SizedBox(height: 10),
+              /*Card(
                 margin: EdgeInsets.symmetric(horizontal: 5, vertical: 10),
                 child: Container(
                   height: 100,
@@ -52,7 +52,7 @@ class _HomeState extends State<Home> {
                   ),
                 ),
               ),
-              SizedBox(height: 20.0),
+              SizedBox(height: 20.0),*/
               Text(
                 'Willkommen in der App!',
                 style: TextStyle(

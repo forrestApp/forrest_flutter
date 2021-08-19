@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:forrest_flutter/screens/authenticate/forgotPassword.dart';
 import 'package:forrest_flutter/services/auth.dart';
 import 'package:forrest_flutter/shared/constants.dart';
@@ -108,10 +109,17 @@ class _SignInState extends State<SignIn> {
                                 .signInWithEmailAndPassword(email, password);
                             if (result == null) {
                               setState(() {
-                                error =
-                                    'Der Login mit diesen Daten war nicht möglich';
                                 loading = false;
                               });
+                              Fluttertoast.showToast(
+                                  msg:
+                                      "Der Login mit diesen Daten war nicht möglich",
+                                  toastLength: Toast.LENGTH_LONG,
+                                  gravity: ToastGravity.BOTTOM,
+                                  timeInSecForIosWeb: 2,
+                                  backgroundColor: Colors.green[900],
+                                  textColor: Colors.white,
+                                  fontSize: 16.0);
                             }
                           }
                         },

@@ -1,4 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:forrest_flutter/services/auth.dart';
 import 'package:forrest_flutter/shared/constants.dart';
 import 'package:forrest_flutter/shared/loading.dart';
@@ -9,9 +11,9 @@ class ForgotPassword extends StatefulWidget {
 }
 
 class _ForgotPasswordState extends State<ForgotPassword> {
+  AuthService _auth = AuthService();
   String _email;
   String error = '';
-  final AuthService _auth = AuthService();
   final _formKey = GlobalKey<FormState>();
   bool loading = false;
 
@@ -84,15 +86,33 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                           ),
                           onPressed: () async {
                             if (_formKey.currentState.validate()) {
-                              setState(() => loading = true);
+                              loading = true;
                               dynamic result =
                                   await _auth.forgotPassword(_email);
+                              FirebaseAuth.instance
+                                  .sendPasswordResetEmail(email: _email);
                               if (result == null) {
-                                setState(() {
-                                  error =
-                                      'Diese Email ist nicht bei uns registriert';
-                                  loading = false;
-                                });
+                                loading = false;
+                                Fluttertoast.showToast(
+                                    msg:
+                                        "Diese Email ist nicht bei uns registriert",
+                                    toastLength: Toast.LENGTH_LONG,
+                                    gravity: ToastGravity.BOTTOM,
+                                    timeInSecForIosWeb: 2,
+                                    backgroundColor: Colors.green[900],
+                                    textColor: Colors.white,
+                                    fontSize: 16.0);
+                              } else {
+                                Navigator.of(context).pop();
+                                Fluttertoast.showToast(
+                                    msg:
+                                        "Dir wurde ein neues Passwort zugeschickt",
+                                    toastLength: Toast.LENGTH_LONG,
+                                    gravity: ToastGravity.BOTTOM,
+                                    timeInSecForIosWeb: 2,
+                                    backgroundColor: Colors.green[900],
+                                    textColor: Colors.white,
+                                    fontSize: 16.0);
                               }
                             }
                           })

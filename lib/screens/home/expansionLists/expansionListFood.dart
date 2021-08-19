@@ -1,5 +1,17 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dropdownfield/dropdownfield.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:forrest_flutter/shared/constants.dart';
+import 'package:forrest_flutter/screens/home/newElement/newFood.dart';
+import 'package:forrest_flutter/services/dailyDatabase/addDailyFood.dart';
+import 'package:intl/intl.dart';
+
+final CollectionReference foodCollection =
+    FirebaseFirestore.instance.collection('Ernährung');
+
+final selectedFood = TextEditingController();
+final FirebaseAuth auth = FirebaseAuth.instance;
+final User user = auth.currentUser;
 
 class ExpansionListFood extends StatefulWidget {
   @override
@@ -18,6 +30,12 @@ class _ExpansionListFoodState extends State<ExpansionListFood> {
   ];
 
   String newFood;
+  String categoryOfNewFood;
+  String nameOfNewFood;
+  int emissionsOfNewFood;
+  String originOfNewFood;
+
+  String todaysDate = DateFormat.yMMMd().format(DateTime.now());
 
   void _showAddFood() {
     showModalBottomSheet(
@@ -26,47 +44,93 @@ class _ExpansionListFoodState extends State<ExpansionListFood> {
       ),
       context: context,
       builder: (context) {
-        return Container(
-          padding: EdgeInsets.symmetric(horizontal: 25, vertical: 30),
-          height: 300,
-          child: Column(children: [
-            Text(
-              'Füge hier ein neues Lebensmittel ein:',
-              style: TextStyle(
-                fontFamily: 'GloriaHalleluja',
-                fontSize: 22.0,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 10),
-            TextFormField(
-              decoration: textInputDecoration.copyWith(
-                  hintText: 'neues Lebensmittel',
-                  fillColor: Colors.green[50],
-                  enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.green[50])),
-                  focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.green[900]))),
-              validator: (val) =>
-                  val.isEmpty ? 'Du hast noch nichts eingegeben' : null,
-              onChanged: (val) {
-                setState(() => newFood = val);
-              },
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              child: Text('Hinzufügen'),
-              style: ElevatedButton.styleFrom(
-                primary: Colors.green[900],
-                textStyle: TextStyle(
-                  color: Colors.white,
-                  fontFamily: 'CourierPrime',
-                  fontSize: 20.0,
+        return SingleChildScrollView(
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 25, vertical: 30),
+            height: 600,
+            child: Column(
+              children: [
+                Text(
+                  'Füge hier ein neues Lebensmittel ein:',
+                  style: TextStyle(
+                    fontFamily: 'GloriaHalleluja',
+                    fontSize: 22.0,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-              ),
-              onPressed: () {},
+                SizedBox(height: 30),
+                DropDownField(
+                  controller: selectedFood,
+                  hintText: 'neues Lebensmittel',
+                  itemsVisibleInDropdown: 3,
+                  enabled: true,
+                  items: <String>[
+                    "Apfel",
+                    "Milch",
+                    "Mandeln",
+                    "Yogurt",
+                    "Brot",
+                  ],
+                  onValueChanged: (value) {
+                    setState(() {
+                      nameOfNewFood = value;
+                    });
+                  },
+                ),
+                SizedBox(height: 20),
+                ElevatedButton(
+                  child: Text('Hinzufügen'),
+                  style: ElevatedButton.styleFrom(
+                    primary: Colors.green[900],
+                    textStyle: TextStyle(
+                      color: Colors.white,
+                      fontFamily: 'CourierPrime',
+                      fontSize: 20.0,
+                    ),
+                  ),
+                  onPressed: () {
+                    AddDailyFoodDatabaseService(
+                      uid: user.uid,
+                      date: todaysDate,
+                    ).addNewDailyFood(
+                        nameOfNewFood, emissionsOfNewFood, originOfNewFood);
+                    Navigator.pop(context);
+                  },
+                ),
+                SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextButton(
+                      child: Container(
+                        width: 200,
+                        child: Text(
+                          'neues Lebensmittel erstellen',
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontFamily: 'CourierPrime',
+                            fontSize: 18.0,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).push(
+                            MaterialPageRoute(builder: (context) => NewFood()));
+                      },
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.arrow_right_alt_outlined),
+                      color: Colors.grey,
+                      iconSize: 40,
+                      onPressed: () {},
+                    )
+                  ],
+                ),
+              ],
             ),
-          ]),
+          ),
         );
       },
     );
@@ -121,7 +185,7 @@ class _ExpansionListFoodState extends State<ExpansionListFood> {
                   trailing: Icon(Icons.delete),
                   onTap: () {
                     setState(() {
-                      _data.removeWhere((currentItem) => item == currentItem);
+                      //_data.removeWhere((currentItem) => item == currentItem);
                     });
                   },
                 ),
