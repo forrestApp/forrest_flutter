@@ -11,9 +11,28 @@ class AddDailyActivitiesDatabaseService {
 
   Future addNewDailyActivities(
       String name, int emissions, String origin) async {
-    return await userFoodCollection.doc(uid).collection(date).add({
+    return await userFoodCollection
+        .doc(uid)
+        .collection('NutzerTracking')
+        .doc('Aktivitäten')
+        .collection(date)
+        .add({
       'Name': name,
       'Emissionen': emissions,
     });
+  }
+
+  Future getCurrentActivityEmission() async {
+    List foodCollectionList = [];
+    try {
+      await userFoodCollection.get().then((QuerySnapshot querySnapshot) {
+        querySnapshot.docs.forEach((element) {
+          foodCollectionList.add(element.data());
+        });
+      });
+    } catch (e) {
+      print(e.toString());
+      return null;
+    }
   }
 }

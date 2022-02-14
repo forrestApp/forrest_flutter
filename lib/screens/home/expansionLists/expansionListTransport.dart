@@ -11,11 +11,15 @@ final User user = auth.currentUser;
 
 final firestoreInstance = FirebaseFirestore.instance;
 
+List todaysListedTransports = ['Auto', 'Fahrrad'];
+
 String newTransportDistance = '';
 int transportEmissionFactor = 0;
 int transportEmissions = 0;
 String transportCategory = '';
 String todaysDate = DateFormat.yMMMd().format(DateTime.now());
+
+int currentNumberOfPassengers = 0;
 
 class ExpansionListTransport extends StatefulWidget {
   @override
@@ -23,15 +27,15 @@ class ExpansionListTransport extends StatefulWidget {
 }
 
 class _ExpansionListTransportState extends State<ExpansionListTransport> {
+  String todaysDate = DateFormat.yMMMd().format(DateTime.now());
+
   List<Item> _data = [
     Item(
       icon: Icons.directions_bike_outlined,
       headerValue: 'Transport',
-      expandedValue: 'Du bist eine Stunde mit dem Auto gefahren',
+      expandedValue: todaysListedTransports,
     ),
   ];
-
-  String todaysDate = DateFormat.yMMMd().format(DateTime.now());
 
   void _showAddTransport() {
     showModalBottomSheet(
@@ -220,6 +224,53 @@ class _ExpansionListTransportState extends State<ExpansionListTransport> {
                               ],
                             ),
                             SizedBox(height: 20),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Container(
+                                  width: 120,
+                                  child: Text(
+                                    'Mitfahrer:',
+                                    style: TextStyle(
+                                      fontFamily: 'CourierPrime',
+                                      fontSize: 20,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 30),
+                                Container(
+                                  width: 40,
+                                  child: TextFormField(
+                                    decoration: textInputDecoration.copyWith(
+                                        hintText: '0',
+                                        fillColor: Colors.green[50],
+                                        enabledBorder: UnderlineInputBorder(
+                                            borderSide: BorderSide(
+                                                color: Colors.green[50])),
+                                        focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                color: Colors.green[900]))),
+                                    validator: (val) => val.isEmpty &&
+                                            int.parse(val) != 0
+                                        ? 'Du hast noch nichts oder keine Zahl eingegeben'
+                                        : null,
+                                    onChanged: (val) {
+                                      currentNumberOfPassengers =
+                                          int.parse(val);
+                                    },
+                                  ),
+                                ),
+                                SizedBox(width: 10),
+                                Text(
+                                  'Person(en)',
+                                  style: TextStyle(
+                                    fontFamily: 'CourierPrime',
+                                    fontSize: 20,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 30),
                             ElevatedButton(
                               child: Text('Hinzufügen'),
                               style: ElevatedButton.styleFrom(
@@ -440,8 +491,6 @@ class _ExpansionListTransportState extends State<ExpansionListTransport> {
   }
 
   void calculateEmissions() async {
-    // getTransportEmissionFactor(); // Faktor kann nicht ausgelesen werden
-
     await FirebaseFirestore.instance
         .collection('Trasport')
         .doc(transportCategory)
@@ -458,6 +507,11 @@ class _ExpansionListTransportState extends State<ExpansionListTransport> {
     transportEmissions =
         int.parse(newTransportDistance) * transportEmissionFactor;
 
+    if (currentNumberOfPassengers != 0) {
+      transportEmissions =
+          (transportEmissions / (currentNumberOfPassengers + 1)).round();
+    }
+
     // In den Tagesverlauf des Nutzers eintragen
     AddDailyTransportDatabaseService(
       uid: user.uid,
@@ -466,21 +520,6 @@ class _ExpansionListTransportState extends State<ExpansionListTransport> {
     Navigator.pop(context);
 
     // auf dem Home-Screen aktualisieren
-  }
-
-  void getTransportEmissionFactor() async {
-    FirebaseFirestore.instance
-        .collection('Trasport')
-        .doc('Fahrrad')
-        .get()
-        .then((DocumentSnapshot documentSnapshot) {
-      if (documentSnapshot.exists) {
-        transportEmissionFactor = documentSnapshot['Emissionen'] ?? [];
-        print('Document data: $transportEmissionFactor');
-      } else {
-        print('Document does not exist on the database');
-      }
-    });
   }
 
   Widget _buildListPanel() {
@@ -520,22 +559,27 @@ class _ExpansionListTransportState extends State<ExpansionListTransport> {
             color: Colors.lightGreen[50],
             child: Column(
               children: [
-                ListTile(
-                  contentPadding: EdgeInsets.symmetric(horizontal: 20),
-                  title: Text(
-                    item.expandedValue,
-                    style: TextStyle(
-                      fontFamily: 'CourierPrime',
-                      fontSize: 15,
-                    ),
-                  ),
-                  trailing: Icon(Icons.delete),
-                  onTap: () {
-                    //setState(() {
-                    //  _data.removeWhere((currentItem) => item == currentItem);
-                    //});
-                  },
-                ),
+                ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: todaysListedTransports.length,
+                    itemBuilder: (context, i) {
+                      return ListTile(
+                        contentPadding: EdgeInsets.symmetric(horizontal: 20),
+                        title: Text(
+                          todaysListedTransports[i],
+                          style: TextStyle(
+                            fontFamily: 'CourierPrime',
+                            fontSize: 15,
+                          ),
+                        ),
+                        trailing: Icon(Icons.delete),
+                        onTap: () {
+                          //setState(() {
+                          //  _data.removeWhere((currentItem) => item == currentItem);
+                          //});
+                        },
+                      );
+                    }),
                 ListTile(
                   contentPadding: EdgeInsets.symmetric(horizontal: 20),
                   title: Text(
@@ -569,7 +613,8 @@ class _ExpansionListTransportState extends State<ExpansionListTransport> {
 }
 
 class Item {
-  String expandedValue, headerValue;
+  String headerValue;
+  List expandedValue;
   IconData icon;
   bool isExpanded;
 

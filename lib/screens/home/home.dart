@@ -1,8 +1,43 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:forrest_flutter/screens/home/expansionLists/expansionListActivities.dart';
 import 'package:forrest_flutter/screens/home/expansionLists/expansionListConsumtion.dart';
 import 'package:forrest_flutter/screens/home/expansionLists/expansionListFood.dart';
 import 'package:forrest_flutter/screens/home/expansionLists/expansionListTransport.dart';
+import 'package:intl/intl.dart';
+
+double calculationBudget = 24.6;
+double calculationUsed, calculationCompensated, calculationBilanz;
+final CollectionReference userFoodCollection =
+    FirebaseFirestore.instance.collection('Nutzerdaten');
+
+String todaysDate = DateFormat.yMMMd().format(DateTime.now());
+
+FirebaseAuth auth = FirebaseAuth.instance;
+User user = auth.currentUser;
+
+bool isEmissionsExceeded;
+Color calenderShortcutColor = Colors.green;
+var calenderShortcutIcon;
+
+List currentTransportEmissions;
+String readingTodaysList;
+
+Future readingData() async {
+  QuerySnapshot snap = await FirebaseFirestore.instance
+      .collection('Nutzerdaten')
+      .doc(user.uid)
+      .collection('NutzerTracking')
+      .doc('Mobilität')
+      .collection(todaysDate)
+      .get();
+
+  snap.docs.forEach((document) {
+    print(document.id);
+    readingTodaysList = document.id;
+  });
+}
 
 class Home extends StatefulWidget {
   @override
@@ -12,6 +47,13 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   int used = 0;
   GlobalKey actionKey;
+
+  @override
+  void initState() {
+    calculateTodayCo2Bilanz();
+    readingData();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,16 +95,18 @@ class _HomeState extends State<Home> {
                 ),
               ),
               SizedBox(height: 20.0),*/
+
+              SizedBox(height: 10),
               Text(
-                'Willkommen in der App!',
+                'Willkommen!',
                 style: TextStyle(
                   color: Colors.black,
                   fontFamily: 'GloriaHalleluja',
-                  fontSize: 30.0,
+                  fontSize: 35.0,
                 ),
               ),
               Divider(
-                height: 50.0,
+                height: 30.0,
                 color: Colors.lightGreen[500],
               ),
               Text(
@@ -73,27 +117,31 @@ class _HomeState extends State<Home> {
                   fontSize: 20.0,
                 ),
               ),
-              SizedBox(height: 20.0),
+              SizedBox(height: 10.0),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   CalculationContainer(
-                    number: '274',
+                    number: calculationBudget.toString(),
                     describtion: 'CO2-Budget',
                   ),
                   CalculationArithmeticSymbol(symbol: '-'),
                   CalculationContainer(
-                    number: '$used',
+                    number: calculationUsed == null
+                        ? '0'
+                        : calculationUsed.toString(),
                     describtion: 'verbraucht',
                   ),
                   CalculationArithmeticSymbol(symbol: '+'),
                   CalculationContainer(
-                    number: '0',
+                    number: calculationCompensated == null
+                        ? '0'
+                        : calculationCompensated.toString(),
                     describtion: 'gepflanzt',
                   ),
                   CalculationArithmeticSymbol(symbol: '='),
                   CalculationContainer(
-                    number: '274',
+                    number: calculationBilanz.toString(),
                     describtion: 'Bilanz',
                   ),
                 ],
@@ -102,6 +150,7 @@ class _HomeState extends State<Home> {
                 height: 60.0,
                 color: Colors.lightGreen[500],
               ),
+              //Text(readingTodaysList),
               ExpansionListFood(),
               SizedBox(height: 15),
               ExpansionListConsumtion(),
@@ -115,6 +164,28 @@ class _HomeState extends State<Home> {
         ),
       ),
     );
+  }
+}
+
+calculateTodayCo2Bilanz() {
+  if (calculationUsed == null && calculationCompensated == null) {
+    calculationBilanz = calculationBudget;
+  } else if (calculationUsed == null) {
+    calculationBilanz = calculationBudget + calculationCompensated;
+  } else if (calculationCompensated == null) {
+    calculationBilanz = calculationBudget - calculationUsed;
+  } else {
+    calculationBilanz =
+        calculationBudget - calculationUsed + calculationCompensated;
+  }
+  if (calculationBilanz < 0) {
+    isEmissionsExceeded = true;
+    calenderShortcutColor = Colors.red[800];
+    calenderShortcutIcon = Icons.close_outlined;
+  } else {
+    isEmissionsExceeded = false;
+    calenderShortcutColor = Colors.green[900];
+    calenderShortcutIcon = Icons.check;
   }
 }
 

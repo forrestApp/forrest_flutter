@@ -10,7 +10,6 @@ import 'package:forrest_flutter/services/addFoodDatabase.dart';
 import 'package:forrest_flutter/services/auth.dart';
 import 'package:forrest_flutter/shared/constants.dart';
 import 'package:lite_rolling_switch/lite_rolling_switch.dart';
-
 import 'newElement/newFood.dart';
 
 class HomeScreenNavigation extends StatefulWidget {

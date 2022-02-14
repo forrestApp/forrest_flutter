@@ -5,6 +5,8 @@ import 'package:forrest_flutter/services/database.dart';
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
+  int currentYear = DateTime.now().year;
+
   //create user object based on firebaseUser
   FirebaseUser _userFromFirebaseUser(User user) {
     return user != null ? FirebaseUser(uid: user.uid) : null;
@@ -44,18 +46,34 @@ class AuthService {
 
   //register with email and password
   Future registerWithEmailAndPassword(
-      String name, String email, String password, String home) async {
+      String name,
+      String email,
+      String password,
+      String home,
+      String profilePicture,
+      String car,
+      String bike) async {
     try {
       UserCredential result = await _auth.createUserWithEmailAndPassword(
           email: email, password: password);
       User user = result.user;
 
       //create a new document for the user
-      await DatabaseService(uid: user.uid).updateUserData(name, email, home);
+      await DatabaseService(uid: user.uid)
+          .updateUserData(name, email, home, profilePicture, car, bike);
+
+      //create powerfolder and data -> average usage
+      await DatabaseService(uid: user.uid, currentYear: currentYear)
+          .initializePowerData('Strommix', 1300, 612300);
+
+      //create heatingfolder without any data
+      await DatabaseService(uid: user.uid, currentYear: currentYear)
+          .initializeHeatingData('-');
 
       return _userFromFirebaseUser(user);
     } on FirebaseAuthException catch (e) {
       //exception that occurs if e-mail already exists
+
       if (e.code == 'Diese Email ist bereits registriert') {
         return e;
       }
@@ -63,7 +81,6 @@ class AuthService {
   }
 
   //forgot password
-
   Future forgotPassword(String email) async {
     try {
       UserCredential userCredential = await _auth

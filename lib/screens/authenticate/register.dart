@@ -21,6 +21,9 @@ class _RegisterState extends State<Register> {
   String password = '';
   String home = '';
   String error = '';
+  String profilePicture = 'assets/images/profilePictures/manInFrame.png';
+  String car = '-';
+  String bike = '-';
 
   @override
   Widget build(BuildContext context) {
@@ -167,10 +170,17 @@ class _RegisterState extends State<Register> {
                               setState(() => loading = true);
                               dynamic result =
                                   await _auth.registerWithEmailAndPassword(
-                                      name, email, password, home);
+                                      name,
+                                      email,
+                                      password,
+                                      home,
+                                      profilePicture,
+                                      car,
+                                      bike);
                               if (result == null) {
                                 setState(() {
-                                  error = 'Bitte gib eine gültige Email an';
+                                  error =
+                                      'Diese Email ist bereits  bei unsregistiert';
                                   loading = false;
                                 });
                               }

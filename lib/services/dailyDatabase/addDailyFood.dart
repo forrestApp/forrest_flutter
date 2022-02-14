@@ -10,7 +10,12 @@ class AddDailyFoodDatabaseService {
       FirebaseFirestore.instance.collection('Nutzerdaten');
 
   Future addNewDailyFood(String name, int emissions, String origin) async {
-    return await userFoodCollection.doc(uid).collection(date).add({
+    return await userFoodCollection
+        .doc(uid)
+        .collection('NutzerTracking')
+        .doc('Ernährung')
+        .collection(date)
+        .add({
       'Name': name,
       'Emissionen': emissions,
     });

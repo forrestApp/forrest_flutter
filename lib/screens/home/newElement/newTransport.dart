@@ -29,7 +29,7 @@ class _NewTransportState extends State<NewTransport> {
               child: Column(
                 children: [
                   Text(
-                    'Erstelle hier ein neues Lebensmittel:',
+                    'Erstelle hier ein neues Auto:',
                     style: TextStyle(
                       fontFamily: 'GloriaHalleluja',
                       fontSize: 22.0,
@@ -48,7 +48,7 @@ class _NewTransportState extends State<NewTransport> {
                   SizedBox(height: 5),
                   TextFormField(
                     decoration: textInputDecoration.copyWith(
-                        hintText: 'neues Lebensmittel',
+                        hintText: 'neues Auto',
                         fillColor: Colors.green[50],
                         enabledBorder: UnderlineInputBorder(
                             borderSide: BorderSide(color: Colors.green[50])),
@@ -63,7 +63,7 @@ class _NewTransportState extends State<NewTransport> {
                   ),
                   SizedBox(height: 30),
                   Text(
-                    'Herkunft:',
+                    'Treibstoff:',
                     style: TextStyle(
                       fontFamily: 'CourierPrime',
                       fontSize: 16.0,
@@ -73,14 +73,14 @@ class _NewTransportState extends State<NewTransport> {
                   SizedBox(height: 5),
                   TextFormField(
                     decoration: textInputDecoration.copyWith(
-                        hintText: 'Herkunft',
+                        hintText: 'Treibstoff',
                         fillColor: Colors.green[50],
                         enabledBorder: UnderlineInputBorder(
                             borderSide: BorderSide(color: Colors.green[50])),
                         focusedBorder: OutlineInputBorder(
                             borderSide: BorderSide(color: Colors.green[900]))),
                     validator: (val) => val.isEmpty
-                        ? 'Du hast noch keinen Herkunftsort eingeben'
+                        ? 'Du hast noch keinen Treibstoff eingeben'
                         : null,
                     onChanged: (val) {
                       setState(() => originOfNewFood = val);
@@ -94,33 +94,7 @@ class _NewTransportState extends State<NewTransport> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            'Bio-Siegel:',
-                            style: TextStyle(
-                              fontFamily: 'CourierPrime',
-                              fontSize: 16.0,
-                            ),
-                            textAlign: TextAlign.left,
-                          ),
-                          SizedBox(height: 5),
-                          LiteRollingSwitch(
-                            value: false,
-                            textOn: '',
-                            textOff: '',
-                            colorOn: Colors.lightGreen[400].withOpacity(0.8),
-                            colorOff: Colors.orange[200],
-                            iconOn: Icons.check,
-                            iconOff: Icons.close,
-                            onChanged: (bool state) {
-                              print('turned ${(state) ? 'on' : 'off'}');
-                            },
-                          ),
-                        ],
-                      ),
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Regional:',
+                            'E-Auto?:',
                             style: TextStyle(
                               fontFamily: 'CourierPrime',
                               fontSize: 16.0,

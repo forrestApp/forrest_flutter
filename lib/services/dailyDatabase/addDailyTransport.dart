@@ -10,9 +10,29 @@ class AddDailyTransportDatabaseService {
       FirebaseFirestore.instance.collection('Nutzerdaten');
 
   Future addNewDailyTransport(String transportCategory, int emissions) async {
-    return await userFoodCollection.doc(uid).collection(date).add({
+    return await userFoodCollection
+        .doc(uid)
+        .collection('NutzerTracking')
+        .doc('Mobilität')
+        .collection(date)
+        .add({
       'Name': transportCategory,
       'Emissionen': emissions,
     });
   }
+
+  /*Future getDailyTransportExpandedValue(List todaysListedTransports) async {
+    return await userFoodCollection
+        .doc(uid)
+        .collection('NutzerTracking')
+        .doc('Mobilität')
+        .collection(date)
+        .get()
+        .then((QuerySnapshot querySnapshot) {
+      querySnapshot.docs.forEach((doc) {
+        todaysListedTransports = todaysListedTransports + doc['Name'];
+        print(doc['Name']);
+      });
+    });
+  }*/
 }
