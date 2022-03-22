@@ -150,6 +150,7 @@ class _HomeState extends State<Home> {
                 height: 60.0,
                 color: Colors.lightGreen[500],
               ),
+              //ReadData(), hier soll testweise die Daten aus der Datenbank ausgelesen werden
               //Text(readingTodaysList),
               ExpansionListFood(),
               SizedBox(height: 15),

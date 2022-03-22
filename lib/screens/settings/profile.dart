@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:forrest_flutter/modules/firebaseUser.dart';
+import 'package:forrest_flutter/screens/home/home.dart';
 import 'package:forrest_flutter/services/database.dart';
 import 'package:forrest_flutter/services/energyDatabase.dart';
 import 'package:forrest_flutter/shared/constants.dart';
@@ -19,11 +20,10 @@ String currentHome;
 String currentCar;
 String currentBike;
 
-List typesOfHeating = ['-', 'Fernwärme', 'Erdgas'];
-
-String currentTypeOfHeating = '-';
+String currentTypeOfHeating;
 int currentAmountOfHeating;
 int emissionsOfHeating;
+int emissionsOfHeatingFactor;
 
 String currentEnergyInput;
 
@@ -210,7 +210,6 @@ inputUserData(BuildContext context, FirebaseUser user, String nameOfCategory,
                             currentCar,
                             inputCategoryData);
                       }
-
                       Navigator.pop(context);
                       Navigator.pop(context);
                       Navigator.of(context).push(
@@ -840,148 +839,98 @@ class GetUserPower extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 Text('Stromart:', style: Theme.of(context).textTheme.bodyText1),
-                SizedBox(width: 6),
+                SizedBox(width: 20),
                 getSelectedPowerType(user, context),
               ],
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  height: 30,
-                  width: 90,
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Menge:',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontFamily: 'CourierPrime',
-                      fontSize: 16.0,
-                    ),
+            EnergyProfileForm(
+              user: user,
+              category: 'Menge',
+              userData: data['Menge'],
+              press: () {
+                showModalBottomSheet(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
                   ),
-                ),
-                Container(
-                  width: 90,
-                  height: 30,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.all(Radius.circular(3)),
-                    color: Colors.green[900].withOpacity(0.2),
-                  ),
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 7, horizontal: 10),
-                    child: Text(
-                      currentAmountOfPower.toString(),
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontFamily: 'CourierPrime',
-                        fontSize: 15.0,
-                      ),
-                    ),
-                  ),
-                ),
-                Text(
-                  'kWh pro Jahr',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontFamily: 'CourierPrime',
-                    fontSize: 13.0,
-                  ),
-                ),
-                IconButton(
-                    icon: Icon(
-                      Icons.edit_outlined,
-                      color: Colors.green[900],
-                    ),
-                    onPressed: () {
-                      showModalBottomSheet(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10.0),
+                  context: context,
+                  builder: (context) {
+                    return Container(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 25, vertical: 30),
+                      height: 250,
+                      child: Column(
+                        children: [
+                          Text(
+                            'Ändere hier deinen jährlichen Stromverbrauch:',
+                            style: TextStyle(
+                              fontFamily: 'GloriaHalleluja',
+                              fontSize: 24.0,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
-                          context: context,
-                          builder: (context) {
-                            return Container(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 25, vertical: 30),
-                                height: 250,
-                                child: Column(children: [
+                          SizedBox(height: 10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
+                                children: [
+                                  Container(
+                                    width: 80,
+                                    child: TextFormField(
+                                      key: _formKey,
+                                      decoration: textInputDecoration.copyWith(
+                                          hintText:
+                                              currentAmountOfPower.toString(),
+                                          fillColor: Colors.green[50],
+                                          enabledBorder: UnderlineInputBorder(
+                                              borderSide: BorderSide(
+                                                  color: Colors.green[50])),
+                                          focusedBorder: OutlineInputBorder(
+                                              borderSide: BorderSide(
+                                                  color: Colors.green[900]))),
+                                      validator: (val) => val.isEmpty
+                                          ? 'Du hast noch nichts eingegeben'
+                                          : null,
+                                      onChanged: (val) {
+                                        currentAmountOfPower = int.parse(val);
+                                      },
+                                    ),
+                                  ),
+                                  SizedBox(width: 10),
                                   Text(
-                                    'Ändere hier deinen jährlichen Stromverbrauch:',
+                                    'kWh pro Jahr',
                                     style: TextStyle(
-                                      fontFamily: 'GloriaHalleluja',
-                                      fontSize: 24.0,
+                                      fontFamily: 'CourierPrime',
+                                      fontSize: 16.0,
                                     ),
                                     textAlign: TextAlign.center,
                                   ),
-                                  SizedBox(height: 10),
-                                  Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceAround,
-                                          children: [
-                                            Container(
-                                              width: 80,
-                                              child: TextFormField(
-                                                key: _formKey,
-                                                decoration: textInputDecoration.copyWith(
-                                                    hintText:
-                                                        currentAmountOfPower
-                                                            .toString(),
-                                                    fillColor: Colors.green[50],
-                                                    enabledBorder:
-                                                        UnderlineInputBorder(
-                                                            borderSide: BorderSide(
-                                                                color: Colors
-                                                                        .green[
-                                                                    50])),
-                                                    focusedBorder:
-                                                        OutlineInputBorder(
-                                                            borderSide: BorderSide(
-                                                                color: Colors
-                                                                        .green[
-                                                                    900]))),
-                                                validator: (val) => val.isEmpty
-                                                    ? 'Du hast noch nichts eingegeben'
-                                                    : null,
-                                                onChanged: (val) {
-                                                  currentAmountOfPower =
-                                                      int.parse(val);
-                                                },
-                                              ),
-                                            ),
-                                            SizedBox(width: 10),
-                                            Text(
-                                              'kWh pro Jahr',
-                                              style: TextStyle(
-                                                fontFamily: 'CourierPrime',
-                                                fontSize: 16.0,
-                                              ),
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ],
-                                        ),
-                                        ElevatedButton(
-                                            child: Icon(Icons.check),
-                                            style: ElevatedButton.styleFrom(
-                                              primary: Colors.green[900],
-                                              textStyle: TextStyle(
-                                                color: Colors.white,
-                                                fontFamily: 'CourierPrime',
-                                                fontSize: 20.0,
-                                              ),
-                                            ),
-                                            onPressed: () async {
-                                              calculatePowerEmissions(
-                                                  user, context, true);
-                                            })
-                                      ])
-                                ]));
-                          });
-                    })
-              ],
+                                ],
+                              ),
+                              ElevatedButton(
+                                child: Icon(Icons.check),
+                                style: ElevatedButton.styleFrom(
+                                  primary: Colors.green[900],
+                                  textStyle: TextStyle(
+                                    color: Colors.white,
+                                    fontFamily: 'CourierPrime',
+                                    fontSize: 20.0,
+                                  ),
+                                ),
+                                onPressed: () async {
+                                  calculatePowerEmissions(user, context, true);
+                                },
+                              )
+                            ],
+                          )
+                        ],
+                      ),
+                    );
+                  },
+                );
+              },
             )
           ]);
         }
@@ -1090,118 +1039,219 @@ class GetUserHeating extends StatelessWidget {
     CollectionReference users =
         FirebaseFirestore.instance.collection('Nutzerdaten');
     return FutureBuilder<DocumentSnapshot>(
-      future: users
-          .doc(user.uid)
-          .collection('NutzerTracking')
-          .doc(heatingYear)
-          .get(),
-      builder:
-          (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
-        if (snapshot.connectionState == ConnectionState.done) {
-          Map<String, dynamic> data =
-              snapshot.data.data() as Map<String, dynamic>;
-          //currentTypeOfHeating = data['Heizungsart'];
-          return Column(
-            children: [
-              Row(
-                children: [
-                  Container(
-                    height: 30,
-                    width: 90,
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Heizung:',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontFamily: 'CourierPrime',
-                        fontSize: 16.0,
+        future: users
+            .doc(user.uid)
+            .collection('NutzerTracking')
+            .doc(heatingYear)
+            .get(),
+        builder:
+            (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            Map<String, dynamic> data =
+                snapshot.data.data() as Map<String, dynamic>;
+            currentTypeOfHeating =
+                data['Stromart']; //aktuelle Heizungsart auslesen und speichern
+            currentAmountOfHeating =
+                data['Menge']; //aktuelle Heizungsmenge auslesen und speichern
+            return Column(
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      height: 30,
+                      width: 90,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Heizung:',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontFamily: 'CourierPrime',
+                          fontSize: 16.0,
+                        ),
                       ),
                     ),
-                  ),
-                  Container(
-                    padding: EdgeInsets.only(left: 16, right: 16),
-                    width: 200,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                          color: Colors.green[900].withOpacity(0.2),
-                          width: 1.3),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: DropdownButton(
-                      isExpanded: true,
-                      dropdownColor: Colors.grey[100],
-                      underline: Container(
-                        color: Colors.transparent,
-                      ),
-                      elevation: 8,
-                      focusColor: Colors.green[900],
-                      value: data['Heizungsart'],
-                      icon: Icon(
-                        Icons.arrow_drop_down,
-                        color: Colors.green[900],
-                        size: 25,
-                      ),
-                      onChanged: (value) async {
-                        await getTypesOfHeating();
-                        currentTypeOfHeating = value;
-                        print(typesOfHeating);
-                        print(currentTypeOfHeating);
-                        await AddEnergyDatabaseService(
-                                uid: user.uid, heatingDate: heatingYear)
-                            .addNewHeating(currentTypeOfHeating,
-                                currentAmountOfHeating, emissionsOfHeating);
-                        Navigator.pop(context);
-                        Navigator.of(context).push(
-                            MaterialPageRoute(builder: (context) => Profile()));
-                      },
-                      items: typesOfHeating.map((itemsname) {
-                            return DropdownMenuItem(
-                              value: itemsname,
-                              child: Container(
-                                width: 140,
-                                child: Text(
-                                  itemsname,
+                    SizedBox(width: 20),
+                    DropDownMenuHeating(), //DropDownMenu in einem Statefull Widget
+                  ],
+                ),
+                EnergyProfileForm(
+                    category: 'Menge',
+                    userData: data['Menge'] == null ? 0 : data['Menge'],
+                    press: () {
+                      showModalBottomSheet(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                        context: context,
+                        builder: (context) {
+                          return Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 25, vertical: 30),
+                            height: 250,
+                            child: Column(
+                              children: [
+                                Text(
+                                  'Ändere hier deinen jährlichen Heizungsverbrauch:',
                                   style: TextStyle(
-                                    color: Colors.black,
-                                    fontFamily: 'CourierPrime',
-                                    fontSize: 15.0,
+                                    fontFamily: 'GloriaHalleluja',
+                                    fontSize: 24.0,
                                   ),
+                                  textAlign: TextAlign.center,
                                 ),
-                              ),
-                            );
-                          }).toList() ??
-                          [],
-                    ),
-                  ),
-                ],
-              ),
-              ProfileForm(
-                  category: 'Menge',
-                  userData: data['Menge'] == null ? '-' : data['Menge'],
-                  press: () async {}),
-            ],
-          );
+                                SizedBox(height: 10),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceAround,
+                                      children: [
+                                        Container(
+                                          width: 80,
+                                          child: TextFormField(
+                                            key: _formKey,
+                                            decoration: textInputDecoration.copyWith(
+                                                hintText: currentAmountOfHeating
+                                                    .toString(),
+                                                fillColor: Colors.green[50],
+                                                enabledBorder:
+                                                    UnderlineInputBorder(
+                                                        borderSide: BorderSide(
+                                                            color: Colors
+                                                                .green[50])),
+                                                focusedBorder:
+                                                    OutlineInputBorder(
+                                                        borderSide: BorderSide(
+                                                            color: Colors
+                                                                .green[900]))),
+                                            validator: (val) => val.isEmpty
+                                                ? 'Du hast noch nichts eingegeben'
+                                                : null,
+                                            onChanged: (val) {
+                                              currentAmountOfHeating =
+                                                  int.parse(val);
+                                            },
+                                          ),
+                                        ),
+                                        SizedBox(width: 10),
+                                        Text(
+                                          'kWh pro Jahr',
+                                          style: TextStyle(
+                                            fontFamily: 'CourierPrime',
+                                            fontSize: 16.0,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ],
+                                    ),
+                                    ElevatedButton(
+                                      child: Icon(Icons.check),
+                                      style: ElevatedButton.styleFrom(
+                                        primary: Colors.green[900],
+                                        textStyle: TextStyle(
+                                          color: Colors.white,
+                                          fontFamily: 'CourierPrime',
+                                          fontSize: 20.0,
+                                        ),
+                                      ),
+                                      onPressed: () async {
+                                        calculateHeatingEmissions(
+                                            user, context, true);
+                                      },
+                                    )
+                                  ],
+                                )
+                              ],
+                            ),
+                          );
+                        },
+                      );
+                    },
+                    user: user),
+              ],
+            );
+          }
+          return Loading();
+        });
+  }
+}
+
+class DropDownMenuHeating extends StatefulWidget {
+  @override
+  State<DropDownMenuHeating> createState() => _DropDownMenuHeatingState();
+}
+
+class _DropDownMenuHeatingState extends State<DropDownMenuHeating> {
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance.collection('Energie').snapshots(),
+      builder: (
+        BuildContext context,
+        AsyncSnapshot<QuerySnapshot> snapshot,
+      ) {
+        if (snapshot.hasError) {
+          return Text('Fehler beim Auslesen');
         }
-        return Loading();
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Loading();
+        }
+        return Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.all(Radius.circular(5)),
+            border: Border.all(color: Colors.green[900], width: 1),
+          ),
+          padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+          alignment: Alignment.center,
+          child: DropdownButton(
+            hint: Text('-'),
+            value: currentTypeOfHeating,
+            onChanged: (newValue) async {
+              setState(() {
+                currentTypeOfHeating = newValue;
+              });
+              calculateHeatingEmissions(user, context, false);
+            },
+            items: snapshot.data.docs.map((DocumentSnapshot document) {
+              return new DropdownMenuItem<String>(
+                value: document['Name'],
+                child: Text(document['Name']),
+              );
+            }).toList(),
+          ),
+        );
       },
     );
   }
 }
 
-getTypesOfHeating() async {
+calculateHeatingEmissions(
+    final user, context, bool amountOfHeatingChanged) async {
   await FirebaseFirestore.instance
       .collection('Energie')
+      .doc(currentTypeOfHeating)
       .get()
-      .then((QuerySnapshot querySnapshot) {
-    querySnapshot.docs.forEach((doc) {
-      print(doc['Name']);
-      typesOfHeating = typesOfHeating + doc['Name'];
-    });
+      .then((DocumentSnapshot documentSnapshot) {
+    if (documentSnapshot.exists) {
+      emissionsOfHeatingFactor = documentSnapshot['Emissionen'] ?? [];
+    } else {
+      print('Document does not exist on the database');
+    }
   });
-}
 
-calculateEmissions() {}
+  emissionsOfHeating = emissionsOfHeatingFactor * currentAmountOfHeating;
+
+  await AddEnergyDatabaseService(uid: user.uid, powerDate: heatingYear)
+      .addNewPower(
+          currentTypeOfHeating, currentAmountOfHeating, emissionsOfHeating);
+  Navigator.pop(context);
+  if (amountOfHeatingChanged == true) {
+    Navigator.pop(context);
+  }
+  Navigator.of(context)
+      .push(MaterialPageRoute(builder: (context) => Profile()));
+}
 
 class ProfileForm extends StatelessWidget {
   const ProfileForm({
@@ -1259,6 +1309,78 @@ class ProfileForm extends StatelessWidget {
           ),
           onPressed: press,
         ),
+      ],
+    );
+  }
+}
+
+class EnergyProfileForm extends StatelessWidget {
+  const EnergyProfileForm({
+    Key key,
+    @required this.category,
+    @required this.userData,
+    @required this.press,
+    @required this.user,
+  }) : super(key: key);
+
+  final FirebaseUser user;
+  final String category;
+  final int userData;
+  final VoidCallback press;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(
+          height: 30,
+          width: 90,
+          alignment: Alignment.centerLeft,
+          child: Text(
+            category,
+            style: TextStyle(
+              color: Colors.black,
+              fontFamily: 'CourierPrime',
+              fontSize: 16.0,
+            ),
+          ),
+        ),
+        Container(
+          width: 90,
+          height: 30,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.all(Radius.circular(3)),
+            color: Colors.green[900].withOpacity(0.2),
+          ),
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 7, horizontal: 10),
+            child: Text(
+              userData.toString(),
+              style: TextStyle(
+                color: Colors.black,
+                fontFamily: 'CourierPrime',
+                fontSize: 15.0,
+              ),
+            ),
+          ),
+        ),
+        Text(
+          'kWh pro Jahr',
+          style: TextStyle(
+            color: Colors.black,
+            fontFamily: 'CourierPrime',
+            fontSize: 13.0,
+          ),
+        ),
+        IconButton(
+          icon: Icon(
+            Icons.edit_outlined,
+            color: Colors.green[900],
+          ),
+          onPressed: press,
+        )
       ],
     );
   }

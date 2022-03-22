@@ -9,7 +9,8 @@ class AddDailyTransportDatabaseService {
   final CollectionReference userFoodCollection =
       FirebaseFirestore.instance.collection('Nutzerdaten');
 
-  Future addNewDailyTransport(String transportCategory, int emissions) async {
+  Future addNewDailyTransport(
+      String transportCategory, int transportDistance, int emissions) async {
     return await userFoodCollection
         .doc(uid)
         .collection('NutzerTracking')
@@ -17,6 +18,7 @@ class AddDailyTransportDatabaseService {
         .collection(date)
         .add({
       'Name': transportCategory,
+      'Distanz': transportDistance,
       'Emissionen': emissions,
     });
   }

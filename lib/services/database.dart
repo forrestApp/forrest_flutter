@@ -38,7 +38,8 @@ class DatabaseService {
     );
   }
 
-  Future initializeHeatingData(String typeOfHeating) async {
+  Future initializeHeatingData(
+      String typeOfHeating, int amountOfHeating) async {
     return await userCollection
         .doc(uid)
         .collection('NutzerTracking')
@@ -46,6 +47,7 @@ class DatabaseService {
         .set(
       {
         'Heizungsart': typeOfHeating,
+        'Menge': amountOfHeating,
       },
     );
   }

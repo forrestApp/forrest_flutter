@@ -11,9 +11,9 @@ final User user = auth.currentUser;
 
 final firestoreInstance = FirebaseFirestore.instance;
 
-List todaysListedTransports = ['Auto', 'Fahrrad'];
+List todaysListedTransports = ['Auto', 'Fahrrad', 'Auto2'];
 
-String newTransportDistance = '';
+int transportDistance = 0;
 int transportEmissionFactor = 0;
 int transportEmissions = 0;
 String transportCategory = '';
@@ -110,7 +110,7 @@ class _ExpansionListTransportState extends State<ExpansionListTransport> {
                                         : null,
                                     onChanged: (val) {
                                       setState(() {
-                                        newTransportDistance = val;
+                                        transportDistance = int.parse(val);
                                         transportCategory = 'Fahrrad';
                                       });
                                     },
@@ -207,7 +207,7 @@ class _ExpansionListTransportState extends State<ExpansionListTransport> {
                                         ? 'Du hast noch nichts eingegeben'
                                         : null,
                                     onChanged: (val) {
-                                      newTransportDistance = val;
+                                      transportDistance = int.parse(val);
                                       transportCategory =
                                           'Auto'; // hier muss noch das vom Nutzer gespeicherte Automodell ausgelesen werden
                                     },
@@ -323,11 +323,10 @@ class _ExpansionListTransportState extends State<ExpansionListTransport> {
                                         ? 'Du hast noch nichts eingegeben'
                                         : null,
                                     onChanged: (val) {
-                                      newTransportDistance = val;
-                                      transportCategory =
-                                          int.parse(newTransportDistance) < 25
-                                              ? 'Bus (Nahverkehr)'
-                                              : 'Bus (Fernverkehr)';
+                                      transportDistance = int.parse(val);
+                                      transportCategory = transportDistance < 25
+                                          ? 'Bus (Nahverkehr)'
+                                          : 'Bus (Fernverkehr)';
                                     },
                                   ),
                                 ),
@@ -372,11 +371,10 @@ class _ExpansionListTransportState extends State<ExpansionListTransport> {
                                         ? 'Du hast noch nichts eingegeben'
                                         : null,
                                     onChanged: (val) {
-                                      newTransportDistance = val;
-                                      transportCategory =
-                                          int.parse(newTransportDistance) < 25
-                                              ? 'Bahn (Nahverkehr)'
-                                              : 'Bahn (Fernverkehr)';
+                                      transportDistance = int.parse(val);
+                                      transportCategory = transportDistance < 25
+                                          ? 'Bahn (Nahverkehr)'
+                                          : 'Bahn (Fernverkehr)';
                                     },
                                   ),
                                 ),
@@ -443,11 +441,10 @@ class _ExpansionListTransportState extends State<ExpansionListTransport> {
                                         ? 'Du hast noch nichts eingegeben'
                                         : null,
                                     onChanged: (val) {
-                                      newTransportDistance = val;
-                                      transportCategory =
-                                          int.parse(newTransportDistance) < 25
-                                              ? 'innerdeutscher Flug'
-                                              : 'grenzüberschreitender Flug';
+                                      transportDistance = int.parse(val);
+                                      transportCategory = transportDistance < 25
+                                          ? 'innerdeutscher Flug'
+                                          : 'grenzüberschreitender Flug';
                                     },
                                   ),
                                 ),
@@ -499,13 +496,12 @@ class _ExpansionListTransportState extends State<ExpansionListTransport> {
       if (documentSnapshot.exists) {
         transportEmissionFactor = documentSnapshot['Emissionen'] ?? [];
       } else {
-        print('Document does not exist on the database');
+        print('Kategorie nicht vorhanden');
       }
     });
 
     // Emissionen aus Transportmittel-Emissionsfaktor und Strecke berechnen
-    transportEmissions =
-        int.parse(newTransportDistance) * transportEmissionFactor;
+    transportEmissions = transportDistance * transportEmissionFactor;
 
     if (currentNumberOfPassengers != 0) {
       transportEmissions =
@@ -516,7 +512,8 @@ class _ExpansionListTransportState extends State<ExpansionListTransport> {
     AddDailyTransportDatabaseService(
       uid: user.uid,
       date: todaysDate,
-    ).addNewDailyTransport(transportCategory, transportEmissions);
+    ).addNewDailyTransport(
+        transportCategory, transportDistance, transportEmissions);
     Navigator.pop(context);
 
     // auf dem Home-Screen aktualisieren
@@ -555,49 +552,7 @@ class _ExpansionListTransportState extends State<ExpansionListTransport> {
               ),
             );
           },
-          body: Container(
-            color: Colors.lightGreen[50],
-            child: Column(
-              children: [
-                ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: todaysListedTransports.length,
-                    itemBuilder: (context, i) {
-                      return ListTile(
-                        contentPadding: EdgeInsets.symmetric(horizontal: 20),
-                        title: Text(
-                          todaysListedTransports[i],
-                          style: TextStyle(
-                            fontFamily: 'CourierPrime',
-                            fontSize: 15,
-                          ),
-                        ),
-                        trailing: Icon(Icons.delete),
-                        onTap: () {
-                          //setState(() {
-                          //  _data.removeWhere((currentItem) => item == currentItem);
-                          //});
-                        },
-                      );
-                    }),
-                ListTile(
-                  contentPadding: EdgeInsets.symmetric(horizontal: 20),
-                  title: Text(
-                    'Hinzufügen:',
-                    style: TextStyle(
-                      fontFamily: 'CourierPrime',
-                      fontSize: 15,
-                    ),
-                    textAlign: TextAlign.right,
-                  ),
-                  trailing: Icon(Icons.add),
-                  onTap: () {
-                    _showAddTransport();
-                  },
-                ),
-              ],
-            ),
-          ),
+          body: Container(),
           isExpanded: item.isExpanded,
         );
       }).toList(),

@@ -68,7 +68,7 @@ class AuthService {
 
       //create heatingfolder without any data
       await DatabaseService(uid: user.uid, currentYear: currentYear)
-          .initializeHeatingData('-');
+          .initializeHeatingData('-', 0);
 
       return _userFromFirebaseUser(user);
     } on FirebaseAuthException catch (e) {
