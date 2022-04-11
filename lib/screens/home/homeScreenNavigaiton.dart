@@ -12,6 +12,10 @@ import 'package:forrest_flutter/shared/constants.dart';
 import 'package:lite_rolling_switch/lite_rolling_switch.dart';
 import 'newElement/newFood.dart';
 
+const PROFILE_BUTTON = 'Test';
+const SETTINGS_BUTTON = 'SETTINGS';
+const LOGOUT_BUTTON = 'LOGOUT';
+
 class HomeScreenNavigation extends StatefulWidget {
   @override
   _HomeScreenNavigationState createState() => _HomeScreenNavigationState();
@@ -36,13 +40,13 @@ class _HomeScreenNavigationState extends State<HomeScreenNavigation> {
     Compensation(),
     Home()
   ];
-  void onSelected(BuildContext context, int item) {
+  void onSelected(BuildContext context, String item) {
     switch (item) {
-      case 0:
+      case PROFILE_BUTTON:
         Navigator.of(context)
             .push(MaterialPageRoute(builder: (context) => Profile()));
         break;
-      case 1:
+      case SETTINGS_BUTTON:
         Navigator.of(context)
             .push(MaterialPageRoute(builder: (context) => Configuration()));
         break;
@@ -647,18 +651,18 @@ class _HomeScreenNavigationState extends State<HomeScreenNavigation> {
           centerTitle: false,
           backgroundColor: Colors.green[900],
           actions: [
-            PopupMenuButton<int>(
+            PopupMenuButton<String>(
               padding: EdgeInsets.all(2),
               onSelected: (item) => onSelected(context, item),
               itemBuilder: (context) => [
-                PopupMenuItem<int>(
+                PopupMenuItem<String>(
                   height: 35,
                   textStyle: TextStyle(
                     color: Colors.black,
                     fontFamily: 'CourierPrime',
                     fontSize: 16.0,
                   ),
-                  value: 0,
+                  value: PROFILE_BUTTON,
                   child: Container(
                       child: Row(
                     children: [
@@ -671,14 +675,14 @@ class _HomeScreenNavigationState extends State<HomeScreenNavigation> {
                     ],
                   )),
                 ),
-                PopupMenuItem<int>(
+                PopupMenuItem<String>(
                   height: 35,
                   textStyle: TextStyle(
                     color: Colors.black,
                     fontFamily: 'CourierPrime',
                     fontSize: 16.0,
                   ),
-                  value: 1,
+                  value: SETTINGS_BUTTON,
                   child: Container(
                       child: Row(
                     children: [
@@ -692,14 +696,14 @@ class _HomeScreenNavigationState extends State<HomeScreenNavigation> {
                   )),
                 ),
                 PopupMenuDivider(),
-                PopupMenuItem<int>(
+                PopupMenuItem<String>(
                   height: 30,
                   textStyle: TextStyle(
                     color: Colors.black,
                     fontFamily: 'CourierPrime',
                     fontSize: 16.0,
                   ),
-                  value: 2,
+                  value: LOGOUT_BUTTON,
                   child: TextButton(
                     child: Container(
                       child: Row(
