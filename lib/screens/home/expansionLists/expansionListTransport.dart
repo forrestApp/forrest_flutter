@@ -521,24 +521,6 @@ class _ExpansionListTransportState extends State<ExpansionListTransport> {
     // auf dem Home-Screen aktualisieren
   }
 
-<<<<<<< Updated upstream
-=======
-  void getTransportEmissionFactor() async {
-    FirebaseFirestore.instance
-        .collection(TRANSPORT_COLLECTION)
-        .doc('Fahrrad')
-        .get()
-        .then((DocumentSnapshot documentSnapshot) {
-      if (documentSnapshot.exists) {
-        transportEmissionFactor = documentSnapshot['Emissionen'] ?? [];
-        print('Document data: $transportEmissionFactor');
-      } else {
-        print('Document does not exist on the database');
-      }
-    });
-  }
-
->>>>>>> Stashed changes
   Widget _buildListPanel() {
     return ExpansionPanelList(
       expansionCallback: (int index, bool isExpanded) {
