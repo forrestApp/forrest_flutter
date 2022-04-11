@@ -11,6 +11,8 @@ final User user = auth.currentUser;
 
 final firestoreInstance = FirebaseFirestore.instance;
 
+const TRANSPORT_COLLECTION = 'Trasport';
+
 List todaysListedTransports = ['Auto', 'Fahrrad', 'Auto2'];
 
 int transportDistance = 0;
@@ -489,7 +491,7 @@ class _ExpansionListTransportState extends State<ExpansionListTransport> {
 
   void calculateEmissions() async {
     await FirebaseFirestore.instance
-        .collection('Trasport')
+        .collection(TRANSPORT_COLLECTION)
         .doc(transportCategory)
         .get()
         .then((DocumentSnapshot documentSnapshot) {
